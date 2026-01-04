@@ -28,6 +28,9 @@ extern TFT_eSPI tft;  // Defined in main.cpp
 // GLOBALE DIAGNOSTICS-VARIABLEN
 // ============================================================================
 
+// Test timing constants
+#define BUTTON_TEST_TIMEOUT_MS 10000  ///< Button test timeout in milliseconds
+
 static volatile uint32_t wifi_frame_count = 0;
 static volatile int last_wifi_rssi = 0;
 static uint32_t ble_device_count = 0;
@@ -284,13 +287,15 @@ bool diagnostics_test_buttons()
     tft.drawString("Button Test", 4, 4, 4);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.drawString("Press buttons A & B", 4, 36, 2);
-    tft.drawString("(10 sec timeout)", 4, 56, 2);
+    char timeout_msg[32];
+    snprintf(timeout_msg, sizeof(timeout_msg), "(%d sec timeout)", BUTTON_TEST_TIMEOUT_MS / 1000);
+    tft.drawString(timeout_msg, 4, 56, 2);
     
     unsigned long start = millis();
     bool button_a_tested = false;
     bool button_b_tested = false;
     
-    while (millis() - start < 10000) {
+    while (millis() - start < BUTTON_TEST_TIMEOUT_MS) {
         bool a_pressed = (digitalRead(BUTTON_A_PIN) == LOW);
         bool b_pressed = (digitalRead(BUTTON_B_PIN) == LOW);
         
@@ -504,7 +509,8 @@ bool diagnostics_test_memory()
     // PSRAM Test Allocation (falls verfügbar)
     bool psram_test_passed = true;
     if (has_psram) {
-        void* test_alloc = heap_caps_malloc(1024 * 100, MALLOC_CAP_SPIRAM);  // 100 KB from PSRAM
+        // Use smaller allocation (32KB) to reduce memory pressure during diagnostics
+        void* test_alloc = heap_caps_malloc(1024 * 32, MALLOC_CAP_SPIRAM);  // 32 KB from PSRAM
         if (test_alloc != nullptr) {
             heap_caps_free(test_alloc);
             Serial.println("[DIAGNOSTICS] PSRAM allocation test: OK");
