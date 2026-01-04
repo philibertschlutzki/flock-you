@@ -1,3 +1,43 @@
+/**
+ * @file main.cpp
+ * @brief Hauptprogramm für Flock You Detection System
+ * 
+ * Dieses Programm implementiert ein Multi-Protocol Überwachungsgerät-Erkennungssystem
+ * für das LILYGO T-Display-S3 Board. Es kombiniert WiFi Promiscuous Mode Sniffing
+ * und BLE Scanning um Flock Safety Kameras und Raven Schusserkennungsgeräte zu
+ * identifizieren.
+ * 
+ * Hardware-Anforderungen:
+ * - LILYGO T-Display-S3 (ESP32-S3 + ST7789 1.9" Display)
+ * - USB-C Stromversorgung
+ * - Optional: Buttons für Diagnostics
+ * 
+ * Features:
+ * - WiFi Promiscuous Mode mit Channel Hopping (Kanal 1-13)
+ * - BLE Active Scanning mit NimBLE
+ * - Display UI (Status + Alert Screens)
+ * - Hardware Diagnostics Mode (Button Hold beim Boot)
+ * - JSON Serial Output für alle Detections
+ * - SSID, MAC und BLE Service UUID Matching
+ * 
+ * Erkennungsmethoden:
+ * 1. WiFi SSID Pattern Matching (z.B. "Flock", "FS Ext Battery")
+ * 2. WiFi MAC-Präfix Matching (bekannte Hersteller-OUIs)
+ * 3. BLE Device Name Pattern Matching
+ * 4. BLE Service UUID Detection (Raven-spezifische UUIDs)
+ * 
+ * Compile-Time Flags:
+ * - FLOCKYOU_HAS_DISPLAY=1: Aktiviert Display UI
+ * - FLOCKYOU_NO_BUZZER=1: Deaktiviert Audio (T-Display-S3 Standard)
+ * 
+ * @author Flock You Team
+ * @version 0.1.0
+ * @date 2026-01-04
+ * 
+ * @see diagnostics.h für Hardware-Selbsttest
+ * @see config.h für Pin-Konfiguration
+ */
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <NimBLEDevice.h>
@@ -131,6 +171,12 @@ static NimBLEScan* pBLEScan;
 // ============================================================================
 
 #if FLOCKYOU_HAS_DISPLAY
+/**
+ * @brief Initialisiert das TFT Display
+ * 
+ * Konfiguriert TFT_eSPI, setzt Rotation auf Landscape (1),
+ * aktiviert Backlight und zeigt einen kurzen Splash Screen.
+ */
 static void display_init()
 {
     tft.init();
@@ -143,6 +189,16 @@ static void display_init()
     tft.drawString("Display-only", 4, 28, 2);
 }
 
+/**
+ * @brief Setzt Alert-Informationen für Display-Anzeige
+ * 
+ * Speichert Alert-Daten und aktiviert Alert-Screen für 8 Sekunden.
+ * Nach Ablauf der Zeit wechselt Display automatisch zurück zum Status-Screen.
+ * 
+ * @param title Alert-Typ (z.B. "WIFI", "BLE", "RAVEN")
+ * @param line Detail-Zeile (z.B. SSID, Device-Name)
+ * @param rssi Signalstärke in dBm
+ */
 static void display_set_alert(const String& title, const String& line, int rssi)
 {
     last_alert_title = title;
@@ -703,6 +759,25 @@ static void hop_channel()
 // MAIN FUNCTIONS
 // ============================================================================
 
+/**
+ * @brief Arduino Setup-Funktion - Initialisierung aller Komponenten
+ * 
+ * Diese Funktion wird einmal beim Boot ausgeführt und initialisiert:
+ * 
+ * 1. Serial Port (115200 Baud)
+ * 2. Hardware Diagnostics Check (Button A Hold Detection)
+ * 3. Audio System (falls BUZZER vorhanden)
+ * 4. Display UI (falls DISPLAY vorhanden)
+ * 5. WiFi Promiscuous Mode
+ * 6. BLE Scanner (NimBLE)
+ * 
+ * Diagnostics Mode:
+ * Falls Button A beim Boot für 3 Sekunden gedrückt gehalten wird,
+ * startet der Hardware-Selbsttest statt des normalen Betriebs.
+ * (siehe diagnostics.h für Details)
+ * 
+ * @note Diese Funktion kehrt zurück, außer wenn Diagnostics-Modus aktiviert wird
+ */
 void setup()
 {
     Serial.begin(115200);
@@ -765,6 +840,27 @@ void setup()
     last_channel_hop = millis();
 }
 
+/**
+ * @brief Arduino Loop-Funktion - Hauptschleife
+ * 
+ * Diese Funktion läuft kontinuierlich und führt folgende Tasks aus:
+ * 
+ * 1. WiFi Channel Hopping (alle 500ms zum nächsten Kanal)
+ * 2. Heartbeat Management (Pieptöne alle 10s wenn Gerät in Reichweite)
+ * 3. Out-of-Range Detection (nach 30s ohne neue Detection)
+ * 4. BLE Scan Management (periodische 1s Scans alle 5s)
+ * 5. Display UI Update (falls DISPLAY vorhanden, alle 200ms)
+ * 
+ * Timing:
+ * - Channel Hop: alle 500ms
+ * - Heartbeat: alle 10s (nur wenn device_in_range)
+ * - Out-of-Range Timeout: 30s nach letzter Detection
+ * - BLE Scan: 1s Scan alle 5s
+ * - Display Update: alle 200ms
+ * - Loop Delay: 100ms
+ * 
+ * @note Diese Funktion läuft endlos, nur unterbrochen durch Reset/Power-Off
+ */
 void loop()
 {
     hop_channel();
