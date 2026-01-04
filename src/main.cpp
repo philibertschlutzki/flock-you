@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include "esp_wifi.h"
 #include "esp_wifi_types.h"
+#include "diagnostics.h"
 
 #ifndef FLOCKYOU_NO_BUZZER
 #define FLOCKYOU_NO_BUZZER 0
@@ -21,7 +22,7 @@
 
 #if FLOCKYOU_HAS_DISPLAY
 #include <TFT_eSPI.h>
-static TFT_eSPI tft = TFT_eSPI();
+TFT_eSPI tft = TFT_eSPI();  // Global auch für diagnostics.cpp
 static unsigned long last_ui_render = 0;
 static unsigned long last_alert_until = 0;
 static String last_alert_title;
@@ -706,6 +707,25 @@ void setup()
 {
     Serial.begin(115200);
     delay(1000);
+
+    // ========================================================================
+    // DIAGNOSTICS MODE CHECK
+    // ========================================================================
+    // Prüfe ob Diagnostics-Modus aktiviert werden soll (Button A beim Boot)
+    if (diagnostics_should_enter()) {
+        #if FLOCKYOU_HAS_DISPLAY
+        // Initialisiere Display für Diagnostics
+        tft.init();
+        tft.setRotation(1);
+        tft.fillScreen(TFT_BLACK);
+        pinMode(TFT_BACKLIGHT_PIN, OUTPUT);
+        digitalWrite(TFT_BACKLIGHT_PIN, HIGH);
+        #endif
+        
+        // Starte Diagnostics (kehrt nie zurück)
+        diagnostics_run_all_tests();
+    }
+    // ========================================================================
 
 #if !FLOCKYOU_NO_BUZZER
     pinMode(BUZZER_PIN, OUTPUT);
