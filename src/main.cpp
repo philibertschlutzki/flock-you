@@ -62,7 +62,7 @@
 
 #if FLOCKYOU_HAS_DISPLAY
 #include <TFT_eSPI.h>
-TFT_eSPI tft = TFT_eSPI();  // Global auch für diagnostics.cpp
+TFT_eSPI tft = TFT_eSPI();  // Global variable, also used by diagnostics.cpp
 static unsigned long last_ui_render = 0;
 static unsigned long last_alert_until = 0;
 static String last_alert_title;

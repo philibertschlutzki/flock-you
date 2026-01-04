@@ -21,7 +21,7 @@
 
 #if FLOCKYOU_HAS_DISPLAY
 #include <TFT_eSPI.h>
-extern TFT_eSPI tft;  // Wird in main.cpp oder ui_display.cpp definiert
+extern TFT_eSPI tft;  // Defined in main.cpp
 #endif
 
 // ============================================================================
@@ -504,9 +504,9 @@ bool diagnostics_test_memory()
     // PSRAM Test Allocation (falls verfügbar)
     bool psram_test_passed = true;
     if (has_psram) {
-        void* test_alloc = ps_malloc(1024 * 100);  // 100 KB
+        void* test_alloc = heap_caps_malloc(1024 * 100, MALLOC_CAP_SPIRAM);  // 100 KB from PSRAM
         if (test_alloc != nullptr) {
-            free(test_alloc);
+            heap_caps_free(test_alloc);
             Serial.println("[DIAGNOSTICS] PSRAM allocation test: OK");
         } else {
             psram_test_passed = false;
