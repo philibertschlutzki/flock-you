@@ -192,16 +192,16 @@ Das System nutzt **WiFi Promiscuous Mode** um alle WiFi-Frames zu erfassen:
 
 1. **Channel Hopping**: Wechselt zwischen Kanälen 1-13
 2. **Frame-Typen**: Probe Requests (0x20) und Beacons (0x80)
-3. **SSID-Matching**: Vergleicht SSID mit bekannten Mustern (`flock`, `Flock`, `FS Ext Battery`, etc.)
-4. **MAC-Präfix-Matching**: Vergleicht MAC-Adresse mit Herstellerpräfixen
+3. **SSID-Matching**: Vergleicht SSID mit bekannten Mustern (Patterns)
+4. **MAC-Präfix-Matching**: Vergleicht MAC-Adresse mit Hersteller-/Pattern-Liste
 
-**Beispiel-Patterns:**
+**Beispiel-Patterns (Wildcard `*`):**
 ```cpp
-// SSID Patterns
-"flock", "Flock", "FLOCK", "FS Ext Battery", "Penguin", "Pigvision"
+// SSID Patterns (Substring-Suche)
+"*flock*", "*Flock*", "*FLOCK*", "*FS Ext Battery*", "*Penguin*", "*Pigvision*"
 
-// MAC Prefixes (Auszug)
-"58:8e:81", "cc:cc:cc", "ec:1b:bd", "90:35:ea", "04:0d:84", ...
+// MAC Patterns (Auszug)
+"58:8e:81:*", "cc:cc:cc:*", "ec:1b:bd:*", "90:35:ea:*", "04:0d:84:*", ...
 ```
 
 ### BLE-Erkennung
@@ -209,7 +209,7 @@ Das System nutzt **WiFi Promiscuous Mode** um alle WiFi-Frames zu erfassen:
 Das System nutzt **NimBLE Active Scanning**:
 
 1. **Advertisement Scan**: Empfängt BLE-Werbepakete
-2. **Name-Matching**: Vergleicht Gerätenamen mit Patterns
+2. **Name-Matching**: Vergleicht Gerätenamen mit Patterns (Wildcard `*`)
 3. **MAC-Präfix-Matching**: Identifiziert Hersteller
 4. **Service UUID Detection**: Erkennt Raven-spezifische UUIDs
 
@@ -276,6 +276,101 @@ Definiert in `platformio.ini`:
 -DFLOCKYOU_NO_BUZZER=1       # Kein Buzzer (T-Display-S3)
 -DFLOCKYOU_HAS_DISPLAY=1     # Display verfügbar
 ```
+
+### Filter & Wildcards (Patterns)
+
+Die Erkennung basiert auf **Pattern-Listen** (Filter), die in `include/detection_patterns.h` definiert sind.
+Dort kannst du festlegen, **welche WiFi-/BLE-Signale** als „Treffer“ gelten (SSID, BLE-Name, MAC, Raven-UUID).
+
+#### Welche Filter gibt es?
+
+Die Firmware kann (je nach Erkennungsquelle) über diese Listen matchen:
+
+- **WiFi SSID Patterns** (`wifi_ssid_patterns[]`): Matcht WiFi-Namen (SSID).
+- **MAC Patterns / OUI** (`mac_prefixes[]`): Matcht Hersteller-/Geräte-Präfixe oder Suffixe der MAC-Adresse.
+- **BLE Name Patterns** (`device_name_patterns[]`): Matcht beworbene BLE-Gerätenamen.
+- **Raven Service UUIDs** (`raven_service_uuids[]`): Matcht BLE-Service-UUIDs (z.B. Raven).
+
+Wenn irgendein Filter passt, löst das System eine Erkennung aus (WiFi/BLE/Raven).
+
+#### Wildcard-Suche (`*`) verstehen
+
+Alle Pattern-Listen unterstützen `*` als Wildcard:
+
+- `*` = beliebige Zeichenfolge (auch leer)
+- Matching ist **case-insensitiv** (Groß-/Kleinschreibung egal)
+
+Beispiele:
+- SSID: `RAVEN-*`, `*Guest`, `*flock*`
+- MAC: `58:8e:*`, `aa:bb:cc:*`, `*:dd:ee:ff`
+- UUID: `00003100-*`, `*-00805f9b34fb`
+
+**Tipp für Anfänger:** Für „Substring-Suche“ einfach vorne und hinten `*` setzen, z.B. `*flock*`.
+
+#### Filter-Modus wählen: LEGACY vs. ALLOWLIST
+
+Es gibt zwei Betriebsmodi:
+
+- **LEGACY**: Nutzt die „Standard-/Heuristik“-Patternlisten (für typische Erkennung).
+- **ALLOWLIST (Test/Labor)**: Nutzt nur deine eigenen Allowlist-Einträge (ideal zum Debuggen und zum Reduzieren von False Positives).
+
+Du stellst den Modus per Compile-Flag in `platformio.ini` um:
+
+```ini
+; LEGACY (Standard-Patterns)
+build_flags =
+  -DFLOCKYOU_FILTER_MODE=FLOCKYOU_FILTER_MODE_LEGACY
+```
+
+```ini
+; ALLOWLIST (nur eigene Geräte/Patterns)
+build_flags =
+  -DFLOCKYOU_FILTER_MODE=FLOCKYOU_FILTER_MODE_ALLOWLIST
+```
+
+> Hinweis: Der Modus beeinflusst, **welche** Pattern-Arrays aktiv ausgewertet werden.
+
+#### ALLOWLIST richtig benutzen (wichtig)
+
+Im ALLOWLIST-Modus solltest du die Allowlist-Arrays so anpassen, dass **nur** deine Testgeräte matchen.
+
+Beispiel: Nur ein bestimmtes WiFi matchen (SSID enthält „MyPhoneHotspot“):
+
+```cpp
+static const char* wifi_ssid_patterns[] = {
+  "*MyPhoneHotspot*",
+  ""  // leer = deaktiviert/ignoriert
+};
+```
+
+Beispiel: Nur Geräte mit bestimmtem MAC-Präfix matchen:
+
+```cpp
+static const char* mac_prefixes[] = {
+  "58:8e:*",
+  ""
+};
+```
+
+Beispiel: Nur ein BLE-Name matchen:
+
+```cpp
+static const char* device_name_patterns[] = {
+  "*MySensor*",
+  ""
+};
+```
+
+#### Wildcard-Suche testweise „breit“ aktivieren
+
+Wenn du prüfen willst, ob die Wildcard-Logik grundsätzlich funktioniert, setze testweise ein Pattern, das sicher vorkommt (z.B. dein Hotspot-Name oder ein typischer String wie `*Phone*`).
+Danach wieder spezifischer werden, sonst bekommst du sehr viele Treffer.
+
+Pragmatischer Testablauf:
+1. Modus auf **ALLOWLIST** stellen.
+2. In `include/detection_patterns.h` bei **SSID** ein Pattern setzen, das sicher vorkommt (z.B. dein Hotspot).
+3. Flashen (`pio run --target upload`).
+4. Prüfen, ob im Serial/Web-Dashboard Treffer erscheinen.
 
 ### Pin-Mapping (LILYGO T-Display-S3)
 
