@@ -84,6 +84,17 @@
  */
 #define TFT_BACKLIGHT_ON HIGH
 
+/**
+ * @brief Alias für Application-Code Kompatibilität
+ * 
+ * Viele Application-Codes erwarten TFT_BACKLIGHT_PIN statt TFT_BL.
+ * Diese Definitionen ermöglichen portable Code zwischen verschiedenen
+ * TFT_eSPI Setups.
+ */
+#ifndef TFT_BACKLIGHT_PIN
+#define TFT_BACKLIGHT_PIN TFT_BL
+#endif
+
 // ============================================================================
 // SPI SPEED CONFIGURATION
 // ============================================================================

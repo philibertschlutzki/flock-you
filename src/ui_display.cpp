@@ -37,8 +37,14 @@ void ui_display_init()
     tft.drawString("Initialisierung...", 4, 60, 2);
 
     // Backlight aktivieren
+    #ifdef TFT_BACKLIGHT_PIN
     pinMode(TFT_BACKLIGHT_PIN, OUTPUT);
+    #ifdef TFT_BACKLIGHT_ON
+    digitalWrite(TFT_BACKLIGHT_PIN, TFT_BACKLIGHT_ON);
+    #else
     digitalWrite(TFT_BACKLIGHT_PIN, HIGH);
+    #endif
+    #endif
 
     delay(2000);  // Splash Screen für 2 Sekunden anzeigen
 }
@@ -147,16 +153,24 @@ void ui_display_tick(bool ble_scanning)
 
 void ui_display_set_backlight(bool on)
 {
+    #ifdef TFT_BACKLIGHT_PIN
+    #ifdef TFT_BACKLIGHT_ON
+    digitalWrite(TFT_BACKLIGHT_PIN, on ? TFT_BACKLIGHT_ON : LOW);
+    #else
     digitalWrite(TFT_BACKLIGHT_PIN, on ? HIGH : LOW);
+    #endif
+    #endif
 }
 
 void ui_display_set_brightness(uint8_t brightness)
 {
+    #ifdef TFT_BACKLIGHT_PIN
     // PWM für Helligkeitssteuerung
     // Frequency: 5000 Hz, Resolution: 8 bit
     ledcSetup(0, 5000, 8);  // PWM Channel 0
     ledcAttachPin(TFT_BACKLIGHT_PIN, 0);
     ledcWrite(0, brightness);
+    #endif
 }
 
 #endif // FLOCKYOU_HAS_DISPLAY
