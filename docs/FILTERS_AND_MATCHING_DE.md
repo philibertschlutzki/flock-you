@@ -106,85 +106,124 @@ static const char* raven_service_uuids[] = {
 };
 ```
 
+
 ---
 
-## 6) Fortgeschritten: Wildcards nachrüsten (SSID + BLE Name)
+## 6) Wildcard-Syntax (Neu implementiert)
 
-Die aktuelle Implementierung nutzt Substring-Matching. Wenn stattdessen Wildcards (z.B. `RAVEN_*`, `*-Guest`) benötigt werden, kann das ohne große Refactorings nachgerüstet werden.
+Das System unterstützt jetzt **vollständige Wildcard-Patterns** für alle Erkennungsmuster (WiFi SSID, BLE Name, MAC-Adressen, Raven Service UUIDs).
 
-### Ziel
-- Patterns sollen `*` (beliebige Länge) und `?` (genau 1 Zeichen) unterstützen.
-- Bestehende Listen bleiben Strings, aber werden als Wildcard-Pattern interpretiert.
+### Was ist ein Wildcard?
 
-### Schritt 1: Wildcard-Matcher als Helper
-Lege eine kleine Helper-Datei an, z.B. `include/wildcard_match.h`:
-```cpp
-#pragma once
+- `*` = beliebige Zeichenfolge (inkl. leer)
+- Alle Vergleiche sind **case-insensitiv**
+- Patterns ohne `*` werden als exakte Matches interpretiert (Backward-Compatible)
 
-static inline bool wildcard_match_ci(const char* pattern, const char* s) {
-  if (!pattern || !s) return false;
+### Wildcard-Beispiele für SSID und BLE-Namen
 
-  // case-insensitive Vergleich ohne Heap, embedded-tauglich
-  auto lower = [](char c) -> char {
-    return (c >= 'A' && c <= 'Z') ? (char)(c + 32) : c;
-  };
-
-  const char* star = nullptr;
-  const char* ss = s;
-
-  while (*s) {
-    char pc = lower(*pattern);
-    char sc = lower(*s);
-
-    if (pc == '?' || pc == sc) { pattern++; s++; continue; }
-    if (pc == '*') { star = pattern++; ss = s; continue; }
-    if (star) { pattern = star + 1; s = ++ss; continue; }
-    return false;
-  }
-
-  while (*pattern == '*') pattern++;
-  return *pattern == '\0';
-}
-```
-
-### Schritt 2: WiFi SSID Matching umstellen
-In `src/wifi_sniffer.cpp` die Funktion `wifi_check_ssid_pattern()` von `strcasestr()` auf den Wildcard-Matcher umstellen:
-- Vorher: „SSID enthält Pattern“
-- Nachher: „SSID matcht Wildcard-Pattern“
-
-Pseudocode:
-```cpp
-#include "wildcard_match.h"
-
-bool wifi_check_ssid_pattern(const char* ssid) {
-  if (!ssid) return false;
-  for (int i = 0; i < (int)(sizeof(wifi_ssid_patterns)/sizeof(wifi_ssid_patterns[0])); i++) {
-    if (wildcard_match_ci(wifi_ssid_patterns[i], ssid)) return true;
-  }
-  return false;
-}
-```
-
-### Schritt 3: BLE Device Name Matching umstellen
-Analog in `src/ble_scanner.cpp` die Funktion `ble_check_device_name_pattern()` auf `wildcard_match_ci()` umstellen.
-
-### Schritt 4: Patterns anpassen
-Danach können in `include/detection_patterns.h` echte Wildcards verwendet werden:
 ```c
 static const char* wifi_ssid_patterns[] = {
-  "RAVEN_*",
-  "*-Guest"
-};
-
-static const char* device_name_patterns[] = {
-  "Raven?",
-  "RAVEN-*"
+    "RAVEN-*",        // Matcht: RAVEN-123, RAVEN-XYZ, RAVEN-TEST
+    "*-Guest",        // Matcht: MyNetwork-Guest, Office-Guest
+    "Flock*Camera",   // Matcht: FlockStreetCamera, Flock_Camera
+    "MyNetwork"       // Matcht: nur exakt "MyNetwork" (kein Wildcard)
 };
 ```
 
-### Test-Hinweise
-- Mindestens ein Pattern ohne Wildcard behalten (Regression-Check).
-- Für Debug: SSID/Name + matchendes Pattern mitloggen.
+**Anwendungsfälle:**
+- `"RAVEN-*"` - Alle Raven-Geräte mit beliebigem Suffix
+- `"*Guest"` - Alle Gast-Netzwerke (endet mit "Guest")
+- `"Test*Device"` - Testgeräte mit variablem Mittelteil
+- `"*FLOCK*"` - Beliebiger Text mit "FLOCK" darin
+
+### Wildcard-Beispiele für MAC-Adressen
+
+```c
+static const char* mac_prefixes[] = {
+    "aa:bb:cc:*",     // Matcht: aa:bb:cc:dd:ee:ff
+    "58:8e:*",        // Matcht: alle 58:8e:xx:xx:xx:xx (Hersteller-OUI)
+    "*:dd:ee:ff",     // Matcht: alle MACs mit Suffix dd:ee:ff
+    "aa:*:ff"         // Matcht: aa:bb:ff, aa:cc:dd:ee:ff
+};
+```
+
+**Hinweis:** MAC-Patterns müssen mindestens 1 vollständiges Byte enthalten (z.B. `"aa:"`, `"bb:cc:*"`).
+
+### Wildcard-Beispiele für Service UUIDs (Raven)
+
+```c
+static const char* raven_service_uuids[] = {
+    "00003100-*",                                    // Matcht: alle GPS Service Variants
+    "*-00805f9b34fb",                                // Matcht: alle mit diesem Suffix
+    "00003100-*-00805f9b34fb",                       // Matcht: GPS mit spezifischem Suffix
+    "00003100-0000-1000-8000-00805f9b34fb"          // Exakt Match (kein Wildcard)
+};
+```
+
+**Hinweis:** UUID-Patterns müssen mindestens 8 zusammenhängende Hex-Zeichen enthalten.
+
+### Mindest-Spezifität (Sicherheits-Constraints)
+
+Um zu verhindern, dass Patterns zu allgemein werden ("match-all"), gibt es folgende Regeln:
+
+1. **SSID/BLE Name:** Mindestens **3 Literal-Zeichen**
+   - ✅ Gültig: `"RAVEN-*"`, `"abc*"`, `"*xyz"`
+   - ❌ Ungültig: `"*"`, `"a*"`, `"ab*"`
+
+2. **MAC-Adresse:** Mindestens **1 vollständiges Byte** (`aa:`)
+   - ✅ Gültig: `"aa:*"`, `"bb:cc:*"`, `"*:dd:ee:ff"`
+   - ❌ Ungültig: `"*"`, `"a*"`
+
+3. **UUID:** Mindestens **8 zusammenhängende Hex-Zeichen**
+   - ✅ Gültig: `"00003100-*"`, `"*-00805f9b"`
+   - ❌ Ungültig: `"*"`, `"0000*"`
+
+4. **Match-All Prevention:** Reine `*` oder `**` Patterns werden abgelehnt
+
+### Startup-Validierung
+
+Beim Boot werden alle Patterns automatisch validiert:
+
+```
+[PATTERN_CHECK] Starting pattern validation...
+[PATTERN_CHECK] WiFi SSID: 6 valid, 0 invalid
+[PATTERN_CHECK] MAC patterns: 20 valid, 0 invalid
+[PATTERN_CHECK] BLE name patterns: 4 valid, 0 invalid
+[PATTERN_CHECK] Raven UUID patterns: 8 valid, 0 invalid
+[PATTERN_CHECK] Pattern validation complete
+```
+
+**Ungültige Patterns:**
+- Werden beim Boot geloggt mit Fehlerbeschreibung
+- Werden zur Laufzeit übersprungen (Graceful Degradation)
+- Optional: Boot-Abort bei ungültigen Patterns (siehe Build-Flags)
+
+### Build-Flags (Optional)
+
+In `platformio.ini`:
+
+```ini
+build_flags = 
+    -DENABLE_WILDCARD_VALIDATION=1      ; Aktiviert Pattern-Validierung (Default)
+    -DSTRICT_PATTERN_VALIDATION=1       ; Boot-Abort bei ungültigen Patterns (Debug)
+    -DDISABLE_WILDCARDS=1               ; Deaktiviert Wildcards (Legacy-Mode)
+```
+
+### Migration von alten Patterns
+
+**Alte Patterns (Substring-Matching):**
+```c
+"Flock"     // Matcht: Flock, Flock-123, MyFlock (überall im String)
+```
+
+**Neue Patterns (Wildcard-Matching):**
+```c
+"Flock"     // Matcht: nur exakt "Flock"
+"Flock*"    // Matcht: Flock, Flock-123 (Präfix)
+"*Flock*"   // Matcht: Flock, MyFlock, Flock-123 (überall)
+```
+
+**Tipp:** Um altes Verhalten zu erhalten, wandle `"Flock"` → `"*Flock*"` um.
 
 ---
 
@@ -192,5 +231,5 @@ static const char* device_name_patterns[] = {
 
 Empfohlenes Vorgehen:
 1. Debug-Log: Für jedes Event die extrahierten Felder loggen (MAC-Präfix, SSID, BLE Name, Service UUIDs).
-2. Feldtest: Ein bekanntes Testgerät pro Kategorie als „Golden Sample“.
+2. Feldtest: Ein bekanntes Testgerät pro Kategorie als „Golden Sample".
 3. Nach Änderungen immer `pio run`.
