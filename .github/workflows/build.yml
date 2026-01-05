@@ -10,13 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     
-    strategy:
-      matrix:
-        environment:
-          - lilygo_tdisplay_s3
-          - xiao_esp32s3
-          - xiao_esp32c3
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -41,29 +34,19 @@ jobs:
         pip install --upgrade platformio
         pio --version
         
-    - name: Build firmware for ${{ matrix.environment }}
+    - name: Build firmware for LILYGO T-Display-S3
       run: |
-        pio run -e ${{ matrix.environment }}
+        pio run -e lilygo_tdisplay_s3
         
     - name: Upload firmware artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: firmware-${{ matrix.environment }}
-        path: .pio/build/${{ matrix.environment }}/firmware.bin
+        name: firmware-lilygo-tdisplay-s3
+        path: |
+          .pio/build/lilygo_tdisplay_s3/firmware.bin
+          .pio/build/lilygo_tdisplay_s3/firmware.elf
         retention-days: 30
         
     - name: Check firmware size
       run: |
-        pio run -e ${{ matrix.environment }} -t size
-        
-  build-summary:
-    needs: build
-    runs-on: ubuntu-latest
-    if: always()
-    
-    steps:
-    - name: Build Summary
-      run: |
-        echo "## Build Results" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "All environments built successfully! ✅" >> $GITHUB_STEP_SUMMARY
+        pio run -e lilygo_tdisplay_s3 -t size

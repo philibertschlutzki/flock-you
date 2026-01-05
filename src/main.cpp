@@ -77,18 +77,6 @@ static const unsigned long ALERT_DISPLAY_MS = 8000;
 // CONFIGURATION
 // ============================================================================
 
-// Hardware Configuration
-#define BUZZER_PIN 3  // GPIO3 (D2) - PWM capable pin on Xiao ESP32 S3
-
-// Audio Configuration
-#define LOW_FREQ 200      // Boot sequence - low pitch
-#define HIGH_FREQ 800     // Boot sequence - high pitch & detection alert
-#define DETECT_FREQ 1000  // Detection alert - high pitch (faster beeps)
-#define HEARTBEAT_FREQ 600 // Heartbeat pulse frequency
-#define BOOT_BEEP_DURATION 300   // Boot beep duration
-#define DETECT_BEEP_DURATION 150 // Detection beep duration (faster)
-#define HEARTBEAT_DURATION 100   // Short heartbeat pulse
-
 // WiFi Promiscuous Mode Configuration
 #define MAX_CHANNEL 13
 #define CHANNEL_HOP_INTERVAL 500  // milliseconds
@@ -264,59 +252,22 @@ static void display_tick(bool ble_scanning)
 // AUDIO SYSTEM
 // ============================================================================
 
-#if !FLOCKYOU_NO_BUZZER
-static void beep(int frequency, int duration_ms)
-{
-    tone(BUZZER_PIN, frequency, duration_ms);
-    delay(duration_ms + 50);
-}
-#endif
-
 static void boot_beep_sequence()
 {
-#if FLOCKYOU_NO_BUZZER
     printf("Audio disabled (FLOCKYOU_NO_BUZZER)\n");
-#else
-    printf("Initializing audio system...\n");
-    printf("Playing boot sequence: Low -> High pitch\n");
-    beep(LOW_FREQ, BOOT_BEEP_DURATION);
-    beep(HIGH_FREQ, BOOT_BEEP_DURATION);
-    printf("Audio system ready\n\n");
-#endif
 }
 
 static void flock_detected_beep_sequence()
 {
-#if FLOCKYOU_NO_BUZZER
     printf("DETECTION (audio disabled)\n");
     device_in_range = true;
     last_detection_time = millis();
     last_heartbeat = millis();
-#else
-    printf("FLOCK SAFETY DEVICE DETECTED!\n");
-    printf("Playing alert sequence: 3 fast high-pitch beeps\n");
-    for (int i = 0; i < 3; i++) {
-        beep(DETECT_FREQ, DETECT_BEEP_DURATION);
-        if (i < 2) delay(50);
-    }
-    printf("Detection complete - device identified!\n\n");
-
-    device_in_range = true;
-    last_detection_time = millis();
-    last_heartbeat = millis();
-#endif
 }
 
 static void heartbeat_pulse()
 {
-#if FLOCKYOU_NO_BUZZER
     printf("Heartbeat (audio disabled)\n");
-#else
-    printf("Heartbeat: Device still in range\n");
-    beep(HEARTBEAT_FREQ, HEARTBEAT_DURATION);
-    delay(100);
-    beep(HEARTBEAT_FREQ, HEARTBEAT_DURATION);
-#endif
 }
 
 // ============================================================================
@@ -808,11 +759,6 @@ void setup()
         diagnostics_run_all_tests();
     }
     // ========================================================================
-
-#if !FLOCKYOU_NO_BUZZER
-    pinMode(BUZZER_PIN, OUTPUT);
-    digitalWrite(BUZZER_PIN, LOW);
-#endif
 
     boot_beep_sequence();
 

@@ -5,7 +5,7 @@
  * Diese Datei enthält alle Hardware-Pins, Compile-Time-Flags und 
  * grundlegende Konfigurationsparameter für das Flock You System.
  * 
- * Primäre Zielhardware: LILYGO T-Display-S3 (ESP32-S3 + ST7789 1.9")
+ * Zielhardware: LILYGO T-Display-S3 (ESP32-S3 + ST7789 1.9")
  */
 
 #pragma once
@@ -63,29 +63,6 @@
  * Typisch GPIO 14 auf T-Display-S3 (Board-abhängig)
  */
 #define BUTTON_B_PIN 14
-
-// ============================================================================
-// HARDWARE PIN MAPPING - XIAO ESP32-S3 (Legacy/Optional)
-// ============================================================================
-
-/**
- * @brief Buzzer-Pin für XIAO ESP32-S3
- * 
- * GPIO3 (D2) - PWM-fähiger Pin auf Xiao ESP32 S3
- */
-#define BUZZER_PIN 3
-
-// ============================================================================
-// AUDIO CONFIGURATION (für Builds mit Buzzer)
-// ============================================================================
-
-#define LOW_FREQ 200           ///< Boot-Sequenz - tiefe Frequenz
-#define HIGH_FREQ 800          ///< Boot-Sequenz - hohe Frequenz
-#define DETECT_FREQ 1000       ///< Detektions-Alert - hohe Frequenz
-#define HEARTBEAT_FREQ 600     ///< Heartbeat-Puls-Frequenz
-#define BOOT_BEEP_DURATION 300         ///< Boot-Piep Dauer in ms
-#define DETECT_BEEP_DURATION 150       ///< Detektions-Piep Dauer in ms
-#define HEARTBEAT_DURATION 100         ///< Heartbeat-Puls Dauer in ms
 
 // ============================================================================
 // WIFI PROMISCUOUS MODE CONFIGURATION
