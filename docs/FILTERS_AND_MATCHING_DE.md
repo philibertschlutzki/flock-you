@@ -131,8 +131,15 @@ Eine Beispiel-Blacklist-Datei befindet sich in `datasets/example_blacklist.csv`:
 trilat,trilong,ssid,qos,transid,firsttime,lasttime,lastupdt,netid,type,capabilities,userfound,device,mfgrId,name,country,region,road,city,housenumber,postalcode
 41.0925450,-81.5574720,MyHomeWiFi,0,20240101-00001,2024-01-01T10:00:00.000Z,2024-01-01T12:00:00.000Z,2024-01-01T12:00:00.000Z,aa:bb:cc:dd:ee:ff,infra,['WPA2'],False,0,,,US,OH,Main Street,Akron,123,44301
 41.0930650,-81.5562140,OfficeNetwork,0,20240101-00002,2024-01-01T10:00:00.000Z,2024-01-01T12:00:00.000Z,2024-01-01T12:00:00.000Z,11:22:33:44:55:66,infra,['WPA2'],False,0,,,US,OH,Broadway Street,Akron,456,44302
+41.0925740,-81.5463800,,0,20240101-00003,2024-01-01T10:00:00.000Z,2024-01-01T12:00:00.000Z,2024-01-01T12:00:00.000Z,aa:bb:cc:11:22:33,infra,[],False,0,,,US,OH,Market Street,Akron,789,44303
 41.0923640,-81.5549830,MyDevice,0,20240102-00001,2024-01-02T08:00:00.000Z,2024-01-02T10:00:00.000Z,2024-01-02T10:00:00.000Z,de:ad:be:ef:ca:fe,BLE,['Misc'],False,7936,,MyDevice,US,OH,Exchange Street,Akron,321,44304
+41.0918700,-81.5562540,SmartWatch,0,20240102-00002,2024-01-02T08:00:00.000Z,2024-01-02T10:00:00.000Z,2024-01-02T10:00:00.000Z,ff:ee:dd:cc:bb:aa,BLE,['Misc'],False,0,,SmartWatch,US,OH,Copley Road,Akron,654,44305
 ```
+
+Diese Beispieldatei enthält:
+- 2 WiFi-Einträge mit SSID (MyHomeWiFi, OfficeNetwork)
+- 1 WiFi-Eintrag ohne SSID (hidden network)
+- 2 BLE-Einträge (MyDevice, SmartWatch)
 
 ### 4.7 Verarbeitungslogik des Generators
 
