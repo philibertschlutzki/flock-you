@@ -4,7 +4,7 @@
 
 ### Required Software
 - PlatformIO Core (latest version)
-- Python 3.7+ (for PlatformIO)
+- Python 3.7+ (for blacklist generator and PlatformIO)
 
 ### Platform Dependencies
 - espressif32 platform
@@ -14,6 +14,23 @@
 - NimBLE-Arduino ^1.4.0
 - ArduinoJson ^6.21.0
 - TFT_eSPI ^2.5.43
+
+## Blacklist Generation
+
+Before building, you must generate the blacklist from CSV data:
+
+```bash
+# Generate blacklist from CSV files in datasets/
+python3 tools/generate_blacklist_from_csv.py
+```
+
+This creates:
+- `include/known_blacklist_generated.h`
+- `src/known_blacklist_generated.cpp`
+
+The blacklist contains known WiFi SSIDs, MACs, BLE MACs, and OUIs extracted from session CSV data.
+
+**Note:** These generated files must exist before building. If you modify CSV data, regenerate the blacklist.
 
 ## Build Commands
 
@@ -68,6 +85,14 @@ Building .pio/build/lilygo_tdisplay_s3/firmware.bin
 -DFLOCKYOU_HAS_DISPLAY=1      # Enable TFT display support
 ```
 
+### Blacklist Configuration
+The blacklist is generated from CSV session data in `datasets/` directory.
+Run `python3 tools/generate_blacklist_from_csv.py` to generate:
+- `include/known_blacklist_generated.h`
+- `src/known_blacklist_generated.cpp`
+
+The system uses a blacklist approach: only unknown devices (not in blacklist) are reported.
+
 ### TFT_eSPI Configuration
 The TFT_eSPI library is automatically configured via:
 ```ini
@@ -88,13 +113,26 @@ All source files are compiled independently:
 |--------|---------|--------------|
 | `main.cpp` | Orchestration | config.h, state.h, all module headers |
 | `state.cpp` | Global state | state.h |
-| `wifi_sniffer.cpp` | WiFi scanning | state.h, output.h, detection_patterns.h |
-| `ble_scanner.cpp` | BLE scanning | state.h, output.h, detection_patterns.h |
+| `wifi_sniffer.cpp` | WiFi scanning | state.h, output.h, blacklist.h |
+| `ble_scanner.cpp` | BLE scanning | state.h, output.h, blacklist.h |
+| `blacklist.cpp` | Blacklist checking | known_blacklist_generated.h, session_filter.h |
+| `session_filter.cpp` | Runtime filter | STL containers |
+| `known_blacklist_generated.cpp` | Generated blacklist | Auto-generated from CSV |
 | `output.cpp` | JSON/Display output | state.h, wifi_sniffer.h, ui_display.h |
 | `ui_display.cpp` | TFT rendering | state.h, wifi_sniffer.h, TFT_eSPI |
 | `diagnostics.cpp` | Hardware test | config.h, TFT_eSPI |
 
 ## Common Build Issues & Solutions
+
+### Issue: Blacklist files not found
+```
+fatal error: known_blacklist_generated.h: No such file or directory
+```
+**Solution:**
+```bash
+# Generate blacklist from CSV data
+python3 tools/generate_blacklist_from_csv.py
+```
 
 ### Issue: Platform not installed
 ```
