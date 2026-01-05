@@ -1,181 +1,98 @@
-# Filter & Matching (WiFi + BLE)
+# Blacklist, Filter & Matching (WiFi + BLE)
 
-Diese Anleitung beschreibt, wie die Erkennungslogik für WiFi- und BLE-Events über Listen/Regeln angepasst werden kann.
-Ziel: Regeln sind **datengetrieben** (Listen), und die Scan-Logik bleibt stabil.
+Diese Anleitung beschreibt die **Blacklist-basierte Unknown-Detection** des Projekts.
+Ziel: Der Scanner bleibt stabil, und das Verhalten wird über Daten (Blacklist) + optionale Session-Filter gesteuert.
 
-> Stand im Code (main): Die Filter nutzen **Wildcard-Matching** (case-insensitiv).
-> Patterns ohne `*` sind **exakt**, und das frühere "Substring-Verhalten" erhält man durch `*pattern*`.
+## Überblick
 
----
+Die Firmware arbeitet nach dem Prinzip:
 
-## 1) Schnellstart (Anfänger)
+- **Known** (in Blacklist / Session Filter) → wird gefiltert (keine Ausgabe)
+- **Unknown** (nicht in Blacklist / Session Filter) → wird als Detection ausgegeben
 
-### Wo wird aktuell konfiguriert?
-Die Filterlisten sind im Projekt zentral in `include/detection_patterns.h` abgelegt:
-- `wifi_ssid_patterns[]` (WiFi SSID)
-- `mac_prefixes[]` (MAC-Patterns, z.B. OUI als Präfix `aa:bb:cc:*`)
-- `device_name_patterns[]` (BLE Name)
-- `raven_service_uuids[]` + `RAVEN_*_SERVICE` (Raven Service UUIDs)
+Kern-API:
 
-Für die meisten Anpassungen reicht es, **nur diese Arrays** zu erweitern.
+- `is_known_wifi(ssid, mac_a, mac_b)`
+- `is_known_ble(mac)`
 
-### Änderungen in 3 Schritten
-1. `include/detection_patterns.h` öffnen.
-2. Passende Liste erweitern (siehe unten).
-3. Build prüfen: `pio run`.
+## 1) Datenquellen der Filterung
 
----
+### 1.1 Compile-time Blacklist (generiert)
 
-## 2) MAC-Adress-Filterung (Patterns)
+Die „Known“-Daten werden aus CSV-Dateien in `datasets/` generiert.
+Der Generator schreibt (und überschreibt) diese Dateien:
 
-### Was wird verglichen?
-MAC-Adressen werden als String im Format `aa:bb:cc:dd:ee:ff` gegen die Liste `mac_prefixes[]` geprüft.
-Dabei sind Wildcards erlaubt (z.B. `aa:bb:cc:*` für einen klassischen OUI-Präfix, oder `*:dd:ee:ff` für ein Suffix).
+- `include/known_blacklist_generated.h`
+- `src/known_blacklist_generated.cpp`
 
-### Liste anpassen (Anfänger)
-In `include/detection_patterns.h` unter `mac_prefixes[]` neue Einträge hinzufügen:
+Enthalten sind typischerweise:
 
-```c
-static const char* mac_prefixes[] = {
-    "58:8e:81:*",   // klassischer OUI-Präfix (erste 3 Bytes)
-    "e4:aa:ea:*",
-    "aa:bb:*"       // breiterer Präfix-Test
-};
-```
+- WiFi SSIDs (String)
+- WiFi MACs (6-Byte)
+- BLE MACs (6-Byte)
+- OUIs (3-Byte Prefix)
 
-### Häufige Fehler
-- Falsches Format: am besten immer Byteweise mit Doppelpunkten schreiben (`aa:bb:...`).
-- Reines `"*"`: wird (je nach Validierung) als "match-all" betrachtet und sollte für Tests nur bewusst eingesetzt werden.
+### 1.2 Session Filter (RAM-only)
 
----
+Zusätzlich gibt es einen Laufzeit-Filter (`session_filter.*`) als Hook für spätere WebGUI/API.
 
-## 3) SSID-Muster-Abgleich (WiFi)
+- Reset bei Reboot (nicht persistent)
+- Ergänzt die „Known“-Prüfung zusätzlich zur generierten Blacklist
 
-### Aktueller Stand
-Im WiFi-Sniffer wird die SSID case-insensitiv gegen `wifi_ssid_patterns[]` gematcht.
-Ohne Wildcard ist ein Pattern **exakt**; für "enthält"-Matching nutze `*pattern*`.
-
-### Liste anpassen (Anfänger)
-In `include/detection_patterns.h` unter `wifi_ssid_patterns[]` erweitern:
+API (Auszug):
 
 ```c
-static const char* wifi_ssid_patterns[] = {
-    "*flock*",
-    "*Pigvision*",
-    "*MyTestSSID*" // neu
-};
+void session_filter_clear();
+
+bool session_filter_add_ssid(const char* ssid);
+bool session_filter_add_mac_wifi(const uint8_t mac[6]);
+bool session_filter_add_mac_ble(const uint8_t mac[6]);
+bool session_filter_add_oui(const uint8_t oui[3]);
 ```
 
----
+## 2) Matching-Regeln
 
-## 4) BLE Gerätenamen-Erkennung
+### 2.1 SSID Matching
 
-### Aktueller Stand
-Im BLE-Scanner wird der beworbene Gerätename case-insensitiv gegen `device_name_patterns[]` gematcht.
-Ohne Wildcard ist ein Pattern **exakt**; für "enthält"-Matching nutze `*pattern*`.
+- **Exakter Match, case-sensitiv** (kein Wildcard/Pattern-Matching)
+- Bei hidden/empty SSID wird SSID ignoriert und es wird nur über MAC/OUI entschieden
 
-### Liste anpassen (Anfänger)
-In `include/detection_patterns.h` unter `device_name_patterns[]` erweitern:
+### 2.2 MAC Matching
 
-```c
-static const char* device_name_patterns[] = {
-    "*Flock*",
-    "*Penguin*",
-    "*MyBLEDevice*" // neu
-};
+- **Exakter 6-Byte Vergleich** gegen die jeweiligen Listen (WiFi/BLE)
+- Zusätzlich wird die OUI geprüft (**erste 3 Bytes**)
+
+### 2.3 WiFi: zwei MACs
+
+Bei WiFi werden (je nach Frame-Typ) zwei MACs geprüft:
+
+- `mac_a` (typisch Source/Client)
+- `mac_b` (typisch BSSID)
+
+Wenn eine der MACs (oder deren OUI) in der Blacklist/Session Filter ist, gilt das Gerät als „known“.
+
+## 3) Detection-Ausgabe (Unknown-only)
+
+Wenn ein Gerät **nicht** als „known“ erkannt wird, wird es ausgegeben.
+
+- WiFi: `probe_request_unknown`, `beacon_unknown`
+- BLE: `unknown`
+
+Hinweis: Beim BLE-Scan kann ein Gerätename in der Ausgabe enthalten sein, er wird aber nicht zur Filterentscheidung verwendet.
+
+## 4) Blacklist generieren
+
+```bash
+python3 tools/generate_blacklist_from_csv.py
 ```
 
----
+Wenn `datasets/` geändert wurde, muss die Generierung erneut laufen, bevor ein Build zuverlässig funktioniert.
 
-## 5) BLE Service UUID Erkennung (Raven)
-
-### Aktueller Stand
-Raven-Geräte werden über Service-UUIDs erkannt:
-- Der Scanner liest alle beworbenen Service UUIDs.
-- Jede UUID wird zu einem String normalisiert.
-- Dann wird case-insensitiv gegen `raven_service_uuids[]` gematcht.
-
-Ohne Wildcard ist der Vergleich **exakt**; mit Wildcard kannst du UUID-Familien abdecken (z.B. `00003100-*`).
-
-### Liste anpassen (Anfänger)
-In `include/detection_patterns.h`:
-1. Neue UUID als `#define` ergänzen (empfohlen, damit sie benannt ist).
-2. Diese UUID in `raven_service_uuids[]` aufnehmen.
-
-Beispiel:
-
-```c
-#define RAVEN_NEW_SERVICE "00003600-0000-1000-8000-00805f9b34fb"
-
-static const char* raven_service_uuids[] = {
-    RAVEN_DEVICE_INFO_SERVICE,
-    RAVEN_NEW_SERVICE
-};
-```
-
----
-
-## 6) Wildcard-Syntax
-
-### Was ist ein Wildcard?
-
-- `*` = beliebige Zeichenfolge (inkl. leer)
-- Alle Vergleiche sind **case-insensitiv**
-- Patterns ohne `*` werden als exakte Matches interpretiert (Backward-Compatible)
-
-### Wildcard-Beispiele für SSID und BLE-Namen
-
-```c
-static const char* wifi_ssid_patterns[] = {
-    "RAVEN-*",        // Matcht: RAVEN-123, RAVEN-XYZ, RAVEN-TEST
-    "*-Guest",        // Matcht: MyNetwork-Guest, Office-Guest
-    "Flock*Camera",   // Matcht: FlockStreetCamera, Flock_Camera
-    "MyNetwork"       // Matcht: nur exakt "MyNetwork" (kein Wildcard)
-};
-```
-
-**Anwendungsfälle:**
-- `"RAVEN-*"` - Alle Raven-Geräte mit beliebigem Suffix
-- `"*-Guest"` - Alle Gast-Netzwerke (endet auf "Guest")
-- `"Test*Device"` - Testgeräte mit variablem Mittelteil
-- `"*FLOCK*"` - Beliebiger Text mit "FLOCK" darin
-
-### Wildcard-Beispiele für MAC-Adressen
-
-```c
-static const char* mac_prefixes[] = {
-    "aa:bb:cc:*",     // Matcht: aa:bb:cc:dd:ee:ff
-    "58:8e:*",        // Matcht: alle 58:8e:xx:xx:xx:xx
-    "*:dd:ee:ff",     // Matcht: alle MACs mit Suffix dd:ee:ff
-    "aa:*:ff"         // Matcht je nach Pattern-Engine mehrere Formen
-};
-```
-
-### Wildcard-Beispiele für Service UUIDs (Raven)
-
-```c
-static const char* raven_service_uuids[] = {
-    "00003100-*",                                    // Matcht: alle GPS Service Variants
-    "*-00805f9b34fb",                                // Matcht: alle mit diesem Suffix
-    "00003100-*-00805f9b34fb",                       // Präfix+Suffix
-    "00003100-0000-1000-8000-00805f9b34fb"           // Exakt Match (kein Wildcard)
-};
-```
-
----
-
-## 7) Pattern-Validierung (Boot)
-
-Beim Boot können Patterns validiert werden (z.B. Mindest-Spezifität, match-all Prevention).
-Welche Checks aktiv sind, kann über Build-Flags gesteuert werden (siehe `platformio.ini`).
-
-**Wichtig:** Das Projekt kann die Validierung auch bewusst im Code/Headers deaktivieren (z.B. um kurze Test-Wildcards ohne Warnungen zu erlauben).
-
----
-
-## 8) Testen / Verifizieren
+## 5) Testen / Verifizieren
 
 Empfohlenes Vorgehen:
-1. Debug-Log: Für jedes Event die extrahierten Felder loggen (SSID, MAC, BLE Name, Service UUIDs).
-2. Feldtest: Ein bekanntes Testgerät pro Kategorie als „Golden Sample“.
-3. Nach Änderungen immer `pio run`.
+
+1. Einen „Known“-Eintrag (SSID oder MAC/OUI) in den CSV-Daten sicherstellen.
+2. Blacklist generieren.
+3. Firmware bauen/flashen.
+4. Prüfen, dass bekannte Geräte **nicht** mehr als Unknown erscheinen, während neue/unbekannte Geräte als Unknown gemeldet werden.
