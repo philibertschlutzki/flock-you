@@ -57,18 +57,23 @@ static inline int count_complete_mac_bytes(const char* pattern)
     
     while (*p) {
         // Prüfe auf Hex-Zeichen-Paar gefolgt von ':' oder Ende
-        if (isxdigit(p[0]) && p[1] != '\0' && isxdigit(p[1])) {
-            if (p[2] == ':' || p[2] == '\0') {
-                count++;
-                p += 2;
-                if (*p == ':') p++;
-            } else {
-                p++;
+        // Bounds check: Stellen Sie sicher, dass p[1] existiert, bevor p[2] geprüft wird
+        if (isxdigit(p[0])) {
+            if (p[1] != '\0' && isxdigit(p[1])) {
+                // Beide Hex-Zeichen vorhanden - prüfe Trennzeichen
+                // p[2] Zugriff ist sicher, da p[1] != '\0' garantiert ist
+                if (p[2] == ':' || p[2] == '\0') {
+                    count++;
+                    p += 2;
+                    if (*p == ':') p++;
+                    continue;
+                }
             }
+            p++;
         } else if (*p == '*') {
             // Wildcard überspringen
             p++;
-            if (*p == ':') p++;
+            if (*p && *p == ':') p++;
         } else {
             p++;
         }

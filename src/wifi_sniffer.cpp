@@ -14,6 +14,9 @@
 #include <string.h>
 #include <ctype.h>
 
+// Maximum Anzahl von Patterns für Warn-Tracking (großzügig bemessen)
+#define MAX_PATTERN_WARNING_TRACKING 100
+
 // Globale Variablen für WiFi Sniffer
 static uint8_t current_channel = 1;
 static unsigned long last_channel_hop = 0;
@@ -126,10 +129,10 @@ bool wifi_check_ssid_pattern(const char* ssid)
             static bool* warned = nullptr;
             if (warned == nullptr) {
                 // Initialisiere Warn-Array beim ersten Aufruf
-                static bool warn_array[100] = {false};  // Großzügiges Maximum
+                static bool warn_array[MAX_PATTERN_WARNING_TRACKING] = {false};
                 warned = warn_array;
             }
-            if (i < 100 && !warned[i]) {
+            if (i < MAX_PATTERN_WARNING_TRACKING && !warned[i]) {
                 Serial.printf("[WILDCARD] Invalid SSID pattern #%d: '%s' - %s\n", 
                     i, p, get_validation_error(p, PATTERN_TYPE_SSID));
                 warned[i] = true;
@@ -162,10 +165,10 @@ bool wifi_check_mac_prefix(const uint8_t* mac)
         if (!validate_pattern(p, PATTERN_TYPE_MAC)) {
             static bool* warned = nullptr;
             if (warned == nullptr) {
-                static bool warn_array[100] = {false};  // Großzügiges Maximum
+                static bool warn_array[MAX_PATTERN_WARNING_TRACKING] = {false};
                 warned = warn_array;
             }
-            if (i < 100 && !warned[i]) {
+            if (i < MAX_PATTERN_WARNING_TRACKING && !warned[i]) {
                 Serial.printf("[WILDCARD] Invalid MAC pattern #%d: '%s' - %s\n", 
                     i, p, get_validation_error(p, PATTERN_TYPE_MAC));
                 warned[i] = true;

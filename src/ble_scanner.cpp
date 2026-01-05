@@ -16,6 +16,9 @@
 #include <ArduinoJson.h>
 #include <string.h>
 
+// Maximum Anzahl von Patterns für Warn-Tracking (großzügig bemessen)
+#define MAX_PATTERN_WARNING_TRACKING 100
+
 // Globale Variablen für BLE Scanner
 static NimBLEScan* pBLEScan = nullptr;
 static unsigned long last_ble_scan = 0;
@@ -50,10 +53,10 @@ static bool check_raven_service_uuid(NimBLEAdvertisedDevice* device, char* detec
             if (!validate_pattern(p, PATTERN_TYPE_UUID)) {
                 static bool* warned = nullptr;
                 if (warned == nullptr) {
-                    static bool warn_array[100] = {false};  // Großzügiges Maximum
+                    static bool warn_array[MAX_PATTERN_WARNING_TRACKING] = {false};  // Großzügiges Maximum
                     warned = warn_array;
                 }
-                if (j < 100 && !warned[j]) {
+                if (j < MAX_PATTERN_WARNING_TRACKING && !warned[j]) {
                     Serial.printf("[WILDCARD] Invalid UUID pattern #%d: '%s' - %s\n", 
                         j, p, get_validation_error(p, PATTERN_TYPE_UUID));
                     warned[j] = true;
@@ -149,10 +152,10 @@ static bool check_mac_prefix(const uint8_t* mac)
         if (!validate_pattern(p, PATTERN_TYPE_MAC)) {
             static bool* warned = nullptr;
             if (warned == nullptr) {
-                static bool warn_array[100] = {false};  // Großzügiges Maximum
+                static bool warn_array[MAX_PATTERN_WARNING_TRACKING] = {false};  // Großzügiges Maximum
                 warned = warn_array;
             }
-            if (i < 100 && !warned[i]) {
+            if (i < MAX_PATTERN_WARNING_TRACKING && !warned[i]) {
                 Serial.printf("[WILDCARD] Invalid MAC pattern #%d: '%s' - %s\n", 
                     i, p, get_validation_error(p, PATTERN_TYPE_MAC));
                 warned[i] = true;
@@ -295,10 +298,10 @@ bool ble_check_device_name_pattern(const char* name)
         if (!validate_pattern(p, PATTERN_TYPE_SSID)) {
             static bool* warned = nullptr;
             if (warned == nullptr) {
-                static bool warn_array[100] = {false};  // Großzügiges Maximum
+                static bool warn_array[MAX_PATTERN_WARNING_TRACKING] = {false};  // Großzügiges Maximum
                 warned = warn_array;
             }
-            if (i < 100 && !warned[i]) {
+            if (i < MAX_PATTERN_WARNING_TRACKING && !warned[i]) {
                 Serial.printf("[WILDCARD] Invalid BLE name pattern #%d: '%s' - %s\n", 
                     i, p, get_validation_error(p, PATTERN_TYPE_SSID));
                 warned[i] = true;
