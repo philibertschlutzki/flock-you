@@ -42,6 +42,9 @@
 
 #pragma once
 
+// Disable wildcard validation to suppress warnings for short wildcards
+#undef ENABLE_WILDCARD_VALIDATION
+
 // ============================================================================
 // FILTER MODE SWITCH
 // ============================================================================
@@ -62,7 +65,7 @@
  * Default ist LEGACY.
  */
 #ifndef FLOCKYOU_FILTER_MODE
-#define FLOCKYOU_FILTER_MODE FLOCKYOU_FILTER_MODE_LEGACY
+#define FLOCKYOU_FILTER_MODE FLOCKYOU_FILTER_MODE_ALLOWLIST
 #endif
 
 // ============================================================================
@@ -90,8 +93,7 @@
  */
 #if FLOCKYOU_FILTER_MODE == FLOCKYOU_FILTER_MODE_ALLOWLIST
 static const char* wifi_ssid_patterns[] = {
-    "" // Allowlist leer = keine SSID-Matches. Trage hier Substrings ein.
-    // Beispiel: "MyTestSSID"
+    "*" // Catch-all wildcard to match everything
 };
 #else
 static const char* wifi_ssid_patterns[] = {
@@ -132,7 +134,7 @@ static const char* wifi_ssid_patterns[] = {
  */
 #if FLOCKYOU_FILTER_MODE == FLOCKYOU_FILTER_MODE_ALLOWLIST
 static const char* mac_prefixes[] = {
-    "" // Allowlist leer = keine MAC-Matches. Trage hier OUIs ein, z.B. "aa:bb:cc".
+    "*" // Catch-all wildcard to match everything
 };
 #else
 static const char* mac_prefixes[] = {
@@ -166,7 +168,7 @@ static const char* mac_prefixes[] = {
  */
 #if FLOCKYOU_FILTER_MODE == FLOCKYOU_FILTER_MODE_ALLOWLIST
 static const char* device_name_patterns[] = {
-    "" // Allowlist leer = keine Name-Matches. Trage hier Substrings ein.
+    "*" // Catch-all wildcard to match everything
 };
 #else
 static const char* device_name_patterns[] = {
@@ -240,7 +242,7 @@ static const char* device_name_patterns[] = {
  */
 #if FLOCKYOU_FILTER_MODE == FLOCKYOU_FILTER_MODE_ALLOWLIST
 static const char* raven_service_uuids[] = {
-    "" // Allowlist leer = keine Raven-UUID-Matches. Trage hier UUID-Strings ein.
+    "*" // Catch-all wildcard to match everything
 };
 #else
 static const char* raven_service_uuids[] = {
