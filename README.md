@@ -22,6 +22,7 @@ Die **Zielhardware** ist das **LILYGO T-Display-S3** (ESP32-S3 mit 1.9" ST7789 D
 - **SSID-Muster-Abgleich**: Identifiziert Netzwerke anhand spezifischer Namen
 - **Gerätenamen-Erkennung**: Erkennt BLE-Geräte anhand beworbener Namen
 - **BLE Service UUID Erkennung**: Identifiziert Raven Schusserkennungsgeräte anhand Service-UUIDs
+- **Wildcard-Unterstützung (`*`)**: Flexible Pattern-Matching für alle Filter (SSID, MAC, UUID)
 
 ### Display-basiertes Alertsystem (LILYGO T-Display-S3)
 
@@ -38,6 +39,12 @@ Die **Zielhardware** ist das **LILYGO T-Display-S3** (ESP32-S3 mit 1.9" ST7789 D
 - **Erkennungs-Historie**: Persistente Speicherung und Export-Möglichkeiten (CSV, KML)
 - **Geräte-Informationen**: Vollständige Gerätedetails inkl. Signalstärke und Bedrohungsbewertung
 - **Erkennungs-Methoden-Tracking**: Zeigt welche Methode den Alert ausgelöst hat
+
+### Sicherheit & Validierung
+
+- **Pattern-Validierung**: Automatische Prüfung aller Erkennungsmuster beim Boot
+- **Mindest-Spezifität**: Verhindert zu allgemeine Patterns (match-all Prevention)
+- **Graceful Degradation**: Ungültige Patterns werden übersprungen mit Warnung
 
 ---
 
