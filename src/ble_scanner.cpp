@@ -35,19 +35,25 @@ static bool check_raven_service_uuid(NimBLEAdvertisedDevice* device, char* detec
     int serviceCount = device->getServiceUUIDCount();
     if (serviceCount == 0) return false;
 
+    const int pattern_count = (int)(sizeof(raven_service_uuids)/sizeof(raven_service_uuids[0]));
+
     for (int i = 0; i < serviceCount; i++) {
         NimBLEUUID serviceUUID = device->getServiceUUID(i);
         std::string uuidStr = serviceUUID.toString();
 
-        for (int j = 0; j < (int)(sizeof(raven_service_uuids)/sizeof(raven_service_uuids[0])); j++) {
+        for (int j = 0; j < pattern_count; j++) {
             const char* p = raven_service_uuids[j];
             if (!p || !*p) continue; // Allowlist kann leer sein
             
             // Validiere Pattern (nur einmalig warnen bei ungültigen Patterns)
 #ifdef ENABLE_WILDCARD_VALIDATION
             if (!validate_pattern(p, PATTERN_TYPE_UUID)) {
-                static bool warned[32] = {false};
-                if (j < 32 && !warned[j]) {
+                static bool* warned = nullptr;
+                if (warned == nullptr) {
+                    static bool warn_array[100] = {false};  // Großzügiges Maximum
+                    warned = warn_array;
+                }
+                if (j < 100 && !warned[j]) {
                     Serial.printf("[WILDCARD] Invalid UUID pattern #%d: '%s' - %s\n", 
                         j, p, get_validation_error(p, PATTERN_TYPE_UUID));
                     warned[j] = true;
@@ -132,15 +138,21 @@ static bool check_mac_prefix(const uint8_t* mac)
     snprintf(mac_str, sizeof(mac_str), "%02x:%02x:%02x:%02x:%02x:%02x", 
         mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
-    for (int i = 0; i < (int)(sizeof(mac_prefixes)/sizeof(mac_prefixes[0])); i++) {
+    const int pattern_count = (int)(sizeof(mac_prefixes)/sizeof(mac_prefixes[0]));
+    
+    for (int i = 0; i < pattern_count; i++) {
         const char* p = mac_prefixes[i];
         if (!p || !*p) continue; // Allowlist kann leer sein
         
         // Validiere Pattern (nur einmalig warnen bei ungültigen Patterns)
 #ifdef ENABLE_WILDCARD_VALIDATION
         if (!validate_pattern(p, PATTERN_TYPE_MAC)) {
-            static bool warned[64] = {false};
-            if (i < 64 && !warned[i]) {
+            static bool* warned = nullptr;
+            if (warned == nullptr) {
+                static bool warn_array[100] = {false};  // Großzügiges Maximum
+                warned = warn_array;
+            }
+            if (i < 100 && !warned[i]) {
                 Serial.printf("[WILDCARD] Invalid MAC pattern #%d: '%s' - %s\n", 
                     i, p, get_validation_error(p, PATTERN_TYPE_MAC));
                 warned[i] = true;
@@ -272,15 +284,21 @@ bool ble_check_device_name_pattern(const char* name)
 {
     if (!name) return false;
 
-    for (int i = 0; i < (int)(sizeof(device_name_patterns)/sizeof(device_name_patterns[0])); i++) {
+    const int pattern_count = (int)(sizeof(device_name_patterns)/sizeof(device_name_patterns[0]));
+    
+    for (int i = 0; i < pattern_count; i++) {
         const char* p = device_name_patterns[i];
         if (!p || !*p) continue; // Allowlist kann leer sein
         
         // Validiere Pattern (nur einmalig warnen bei ungültigen Patterns)
 #ifdef ENABLE_WILDCARD_VALIDATION
         if (!validate_pattern(p, PATTERN_TYPE_SSID)) {
-            static bool warned[32] = {false};
-            if (i < 32 && !warned[i]) {
+            static bool* warned = nullptr;
+            if (warned == nullptr) {
+                static bool warn_array[100] = {false};  // Großzügiges Maximum
+                warned = warn_array;
+            }
+            if (i < 100 && !warned[i]) {
                 Serial.printf("[WILDCARD] Invalid BLE name pattern #%d: '%s' - %s\n", 
                     i, p, get_validation_error(p, PATTERN_TYPE_SSID));
                 warned[i] = true;

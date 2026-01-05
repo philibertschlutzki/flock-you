@@ -114,15 +114,22 @@ bool wifi_check_ssid_pattern(const char* ssid)
 {
     if (!ssid) return false;
 
-    for (int i = 0; i < (int)(sizeof(wifi_ssid_patterns)/sizeof(wifi_ssid_patterns[0])); i++) {
+    const int pattern_count = (int)(sizeof(wifi_ssid_patterns)/sizeof(wifi_ssid_patterns[0]));
+    
+    for (int i = 0; i < pattern_count; i++) {
         const char* p = wifi_ssid_patterns[i];
         if (!p || !*p) continue; // Allowlist kann leer sein
         
         // Validiere Pattern (nur einmalig warnen bei ungültigen Patterns)
 #ifdef ENABLE_WILDCARD_VALIDATION
         if (!validate_pattern(p, PATTERN_TYPE_SSID)) {
-            static bool warned[32] = {false};
-            if (i < 32 && !warned[i]) {
+            static bool* warned = nullptr;
+            if (warned == nullptr) {
+                // Initialisiere Warn-Array beim ersten Aufruf
+                static bool warn_array[100] = {false};  // Großzügiges Maximum
+                warned = warn_array;
+            }
+            if (i < 100 && !warned[i]) {
                 Serial.printf("[WILDCARD] Invalid SSID pattern #%d: '%s' - %s\n", 
                     i, p, get_validation_error(p, PATTERN_TYPE_SSID));
                 warned[i] = true;
@@ -144,15 +151,21 @@ bool wifi_check_mac_prefix(const uint8_t* mac)
     snprintf(mac_str, sizeof(mac_str), "%02x:%02x:%02x:%02x:%02x:%02x", 
         mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
-    for (int i = 0; i < (int)(sizeof(mac_prefixes)/sizeof(mac_prefixes[0])); i++) {
+    const int pattern_count = (int)(sizeof(mac_prefixes)/sizeof(mac_prefixes[0]));
+    
+    for (int i = 0; i < pattern_count; i++) {
         const char* p = mac_prefixes[i];
         if (!p || !*p) continue; // Allowlist kann leer sein
         
         // Validiere Pattern (nur einmalig warnen bei ungültigen Patterns)
 #ifdef ENABLE_WILDCARD_VALIDATION
         if (!validate_pattern(p, PATTERN_TYPE_MAC)) {
-            static bool warned[64] = {false};
-            if (i < 64 && !warned[i]) {
+            static bool* warned = nullptr;
+            if (warned == nullptr) {
+                static bool warn_array[100] = {false};  // Großzügiges Maximum
+                warned = warn_array;
+            }
+            if (i < 100 && !warned[i]) {
                 Serial.printf("[WILDCARD] Invalid MAC pattern #%d: '%s' - %s\n", 
                     i, p, get_validation_error(p, PATTERN_TYPE_MAC));
                 warned[i] = true;

@@ -56,8 +56,8 @@ static inline int count_complete_mac_bytes(const char* pattern)
     const char* p = pattern;
     
     while (*p) {
-        // Prüfe auf Hex-Zeichen-Paar gefolgt von ':'
-        if (isxdigit(p[0]) && isxdigit(p[1])) {
+        // Prüfe auf Hex-Zeichen-Paar gefolgt von ':' oder Ende
+        if (isxdigit(p[0]) && p[1] != '\0' && isxdigit(p[1])) {
             if (p[2] == ':' || p[2] == '\0') {
                 count++;
                 p += 2;
@@ -96,7 +96,8 @@ static inline int count_consecutive_hex_chars(const char* pattern)
             if (current_consecutive > max_consecutive) {
                 max_consecutive = current_consecutive;
             }
-        } else if (*pattern != '*' && *pattern != '-') {
+        } else {
+            // Reset counter on any non-hex character (including '-', ':', etc.)
             current_consecutive = 0;
         }
         pattern++;

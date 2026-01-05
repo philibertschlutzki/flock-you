@@ -210,9 +210,9 @@ void test_validate_pattern_ssid_invalid(void)
 {
     TEST_ASSERT_FALSE(validate_pattern("*", PATTERN_TYPE_SSID));
     TEST_ASSERT_FALSE(validate_pattern("**", PATTERN_TYPE_SSID));
-    TEST_ASSERT_FALSE(validate_pattern("a*", PATTERN_TYPE_SSID));
-    TEST_ASSERT_FALSE(validate_pattern("ab*", PATTERN_TYPE_SSID));
-    TEST_ASSERT_FALSE(validate_pattern("*a", PATTERN_TYPE_SSID));
+    TEST_ASSERT_FALSE(validate_pattern("a*", PATTERN_TYPE_SSID));   // 1 literal char
+    TEST_ASSERT_FALSE(validate_pattern("ab*", PATTERN_TYPE_SSID));  // 2 literal chars
+    TEST_ASSERT_FALSE(validate_pattern("*ab", PATTERN_TYPE_SSID));  // 2 literal chars
 }
 
 void test_validate_pattern_mac_valid(void)
@@ -242,7 +242,8 @@ void test_validate_pattern_uuid_invalid(void)
 {
     TEST_ASSERT_FALSE(validate_pattern("*", PATTERN_TYPE_UUID));
     TEST_ASSERT_FALSE(validate_pattern("**", PATTERN_TYPE_UUID));
-    TEST_ASSERT_FALSE(validate_pattern("0000*", PATTERN_TYPE_UUID));
+    TEST_ASSERT_FALSE(validate_pattern("0000*", PATTERN_TYPE_UUID));      // Only 4 hex chars
+    TEST_ASSERT_FALSE(validate_pattern("1234567*", PATTERN_TYPE_UUID));   // Only 7 hex chars
 }
 
 void test_validate_pattern_empty(void)
