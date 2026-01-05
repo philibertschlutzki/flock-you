@@ -8,6 +8,8 @@
 #if FLOCKYOU_HAS_DISPLAY
 
 #include "ui_display.h"
+#include "state.h"
+#include "wifi_sniffer.h"
 #include <TFT_eSPI.h>
 
 // TFT Display Objekt
@@ -19,9 +21,6 @@ static unsigned long last_alert_until = 0;
 static String last_alert_title;
 static String last_alert_line;
 static int last_alert_rssi = 0;
-
-// Externe globale Variablen (aus main.cpp / wird später refaktoriert)
-extern bool device_in_range;
 
 void ui_display_init()
 {
@@ -37,12 +36,12 @@ void ui_display_init()
     tft.drawString("Initialisierung...", 4, 60, 2);
 
     // Backlight aktivieren
-    #ifdef TFT_BACKLIGHT_PIN
-    pinMode(TFT_BACKLIGHT_PIN, OUTPUT);
+    #ifdef TFT_BL
+    pinMode(TFT_BL, OUTPUT);
     #ifdef TFT_BACKLIGHT_ON
-    digitalWrite(TFT_BACKLIGHT_PIN, TFT_BACKLIGHT_ON);
+    digitalWrite(TFT_BL, TFT_BACKLIGHT_ON);
     #else
-    digitalWrite(TFT_BACKLIGHT_PIN, HIGH);
+    digitalWrite(TFT_BL, HIGH);
     #endif
     #endif
 
@@ -108,9 +107,6 @@ static void display_render_alert()
  */
 static void display_render_status(bool ble_scanning)
 {
-    // Externe Funktion für aktuellen WiFi-Kanal
-    extern uint8_t wifi_sniffer_get_current_channel();
-    
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.drawString("Flock You", 4, 4, 4);
@@ -153,22 +149,22 @@ void ui_display_tick(bool ble_scanning)
 
 void ui_display_set_backlight(bool on)
 {
-    #ifdef TFT_BACKLIGHT_PIN
+    #ifdef TFT_BL
     #ifdef TFT_BACKLIGHT_ON
-    digitalWrite(TFT_BACKLIGHT_PIN, on ? TFT_BACKLIGHT_ON : LOW);
+    digitalWrite(TFT_BL, on ? TFT_BACKLIGHT_ON : LOW);
     #else
-    digitalWrite(TFT_BACKLIGHT_PIN, on ? HIGH : LOW);
+    digitalWrite(TFT_BL, on ? HIGH : LOW);
     #endif
     #endif
 }
 
 void ui_display_set_brightness(uint8_t brightness)
 {
-    #ifdef TFT_BACKLIGHT_PIN
+    #ifdef TFT_BL
     // PWM für Helligkeitssteuerung
     // Frequency: 5000 Hz, Resolution: 8 bit
     ledcSetup(0, 5000, 8);  // PWM Channel 0
-    ledcAttachPin(TFT_BACKLIGHT_PIN, 0);
+    ledcAttachPin(TFT_BL, 0);
     ledcWrite(0, brightness);
     #endif
 }

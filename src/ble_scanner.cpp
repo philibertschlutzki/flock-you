@@ -7,6 +7,7 @@
 #include "config.h"
 #include "detection_patterns.h"
 #include "output.h"
+#include "state.h"
 #include <NimBLEDevice.h>
 #include <NimBLEScan.h>
 #include <NimBLEAdvertisedDevice.h>
@@ -16,11 +17,6 @@
 // Globale Variablen für BLE Scanner
 static NimBLEScan* pBLEScan = nullptr;
 static unsigned long last_ble_scan = 0;
-
-// Externe globale Variablen (aus main.cpp / wird später refaktoriert)
-extern bool triggered;
-extern bool device_in_range;
-extern unsigned long last_detection_time;
 
 /**
  * @brief Prüft ob BLE Service UUID zu Raven Gunshot Detector gehört

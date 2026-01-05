@@ -41,14 +41,6 @@
 // ============================================================================
 
 /**
- * @brief Backlight-Pin für ST7789 Display
- * 
- * Der Backlight kann per PWM gesteuert werden für Helligkeitsanpassung.
- * GPIO 38 ist der Standard-Pin für LILYGO T-Display-S3.
- */
-#define TFT_BACKLIGHT_PIN 38
-
-/**
  * @brief Button A Pin (falls vorhanden auf T-Display-S3)
  * 
  * Verwendung: Toggle Status/Details Ansicht

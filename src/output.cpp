@@ -6,16 +6,13 @@
 #include "output.h"
 #include "config.h"
 #include "detection_patterns.h"
+#include "state.h"
+#include "wifi_sniffer.h"
 #include <ArduinoJson.h>
 
 #if FLOCKYOU_HAS_DISPLAY
 #include "ui_display.h"
 #endif
-
-// Externe globale Variablen (aus main.cpp / wird später refaktoriert)
-extern bool device_in_range;
-extern unsigned long last_detection_time;
-extern unsigned long last_heartbeat;
 
 #if !FLOCKYOU_NO_BUZZER
 /**
@@ -46,8 +43,6 @@ void output_wifi_detection_json(const char* ssid, const uint8_t* mac, int rssi, 
     doc["rssi"] = rssi;
     doc["signal_strength"] = rssi > -50 ? "STRONG" : (rssi > -70 ? "MEDIUM" : "WEAK");
     
-    // Channel-Info wird später aus wifi_sniffer geholt
-    extern uint8_t wifi_sniffer_get_current_channel();
     doc["channel"] = wifi_sniffer_get_current_channel();
 
     char mac_str[18];
