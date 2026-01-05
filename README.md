@@ -8,7 +8,7 @@
 
 Flock You ist ein fortschrittliches Erkennungssystem zur Identifizierung von Flock Safety Überwachungskameras, Raven Schusserkennungsgeräten und ähnlichen Überwachungsgeräten mittels mehrerer Erkennungsmethoden.
 
-Die **primäre Zielhardware** ist das **LILYGO T-Display-S3** (ESP32-S3 mit 1.9" ST7789 Display). Das Projekt unterstützt optional auch ältere Boards wie XIAO ESP32-S3 (Legacy).
+Die **Zielhardware** ist das **LILYGO T-Display-S3** (ESP32-S3 mit 1.9" ST7789 Display).
 
 ---
 
@@ -30,13 +30,6 @@ Die **primäre Zielhardware** ist das **LILYGO T-Display-S3** (ESP32-S3 mit 1.9"
 - **Backlight-Steuerung**: Ein/Aus und PWM-Helligkeitssteuerung
 - **Hardware-Diagnostics**: Vollständiger Selbsttest aller Komponenten
 
-### Audio-Alertsystem (XIAO / Oui-Spy Builds - Optional)
-
-- **Boot-Sequenz**: 2 Pieptöne (tief → hoch) beim Start
-- **Erkennungs-Alert**: 3 schnelle hochfrequente Pieptöne bei Geräteerkennung
-- **Heartbeat-Puls**: 2 Pieptöne alle 10 Sekunden solange Gerät in Reichweite
-- **Reichweiten-Überwachung**: Automatische Erkennung wenn Gerät Reichweite verlässt
-
 ### Umfassende Datenausgabe
 
 - **JSON-Erkennungsdaten**: Strukturierte Ausgabe mit Timestamps, RSSI, MAC-Adressen
@@ -50,7 +43,7 @@ Die **primäre Zielhardware** ist das **LILYGO T-Display-S3** (ESP32-S3 mit 1.9"
 
 ## 🔧 Hardware-Anforderungen
 
-### Option 1: LILYGO T-Display-S3 (Primär, empfohlen)
+### LILYGO T-Display-S3
 
 - **Mikrocontroller**: ESP32-S3 mit PSRAM
 - **Display**: 1.9" ST7789 TFT LCD (170x320 Pixel)
@@ -63,20 +56,6 @@ Die **primäre Zielhardware** ist das **LILYGO T-Display-S3** (ESP32-S3 mit 1.9"
 **Bezugsquellen:**
 - AliExpress, Amazon, Tindie
 - Preis: ca. 15-25 EUR
-
-### Option 2: Xiao ESP32 S3 (Legacy/Optional)
-
-- **Mikrocontroller**: Xiao ESP32 S3
-- **Audio**: 3V Buzzer an GPIO3 (D2)
-- **Kein Display**: Terminal-basierte Ausgabe
-- **Konnektivität**: USB-C
-
-**Verkabelung für Xiao Setup:**
-```
-Xiao ESP32 S3    Buzzer
-GPIO3 (D2)  ---> Positive (+)
-GND         ---> Negative (-)
-```
 
 ---
 

@@ -7,14 +7,10 @@
  * 
  * Zielhardware: LILYGO T-Display-S3 (ESP32-S3 + 1.9" ST7789 TFT)
  * 
- * WICHTIG: Es gibt verschiedene Board-Revisionen!
- * Falls das Display nicht funktioniert, überprüfe die Pin-Belegung
- * und passe die Werte entsprechend an.
+ * WICHTIG: Dieses Board verwendet i8080 8-bit parallel interface, NICHT SPI!
+ * Basiert auf TFT_eSPI Setup206_LilyGo_T_Display_S3.h
  * 
- * Typische Probleme:
- * - Display bleibt schwarz -> Backlight-Pin prüfen (GPIO 38)
- * - Falsche Farben -> Rotation oder RGB/BGR Order prüfen
- * - Kein Signal -> SPI Pins (MOSI, SCLK, CS, DC, RST) verifizieren
+ * @see https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup206_LilyGo_T_Display_S3.h
  */
 
 #pragma once
@@ -37,21 +33,19 @@
 #define TFT_HEIGHT 320
 
 // ============================================================================
-// SPI PIN CONFIGURATION - LILYGO T-Display-S3 Standard Pinout
+// i8080 8-BIT PARALLEL INTERFACE CONFIGURATION
 // ============================================================================
 
 /**
- * @brief SPI MOSI (Master Out Slave In) - Daten zum Display
+ * @brief Enable i8080 8-bit parallel mode
+ * 
+ * LILYGO T-Display-S3 verwendet 8-bit parallel interface für höhere
+ * Geschwindigkeit statt SPI.
  */
-#define TFT_MOSI 17
+#define TFT_PARALLEL_8_BIT
 
 /**
- * @brief SPI Clock - Takt-Signal für Display
- */
-#define TFT_SCLK 18
-
-/**
- * @brief Chip Select - Aktiviert Display für SPI-Kommunikation
+ * @brief Chip Select - Aktiviert Display für i8080-Kommunikation
  */
 #define TFT_CS    6
 
@@ -64,6 +58,30 @@
  * @brief Reset - Hardware-Reset für Display
  */
 #define TFT_RST   5
+
+/**
+ * @brief Write Strobe - i8080 Write Clock Signal
+ */
+#define TFT_WR    8
+
+/**
+ * @brief Read Strobe - i8080 Read Clock Signal
+ */
+#define TFT_RD    9
+
+/**
+ * @brief 8-bit parallel data bus pins (D0-D7)
+ * 
+ * Definiert die GPIO-Pins für die 8 Datenleitungen des i8080 Interface.
+ */
+#define TFT_D0   39
+#define TFT_D1   40
+#define TFT_D2   41
+#define TFT_D3   42
+#define TFT_D4   45
+#define TFT_D5   46
+#define TFT_D6   47
+#define TFT_D7   48
 
 // ============================================================================
 // BACKLIGHT CONFIGURATION
@@ -96,16 +114,16 @@
 #endif
 
 // ============================================================================
-// SPI SPEED CONFIGURATION
+// BUS SPEED CONFIGURATION
 // ============================================================================
 
 /**
- * @brief SPI Bus-Frequenz in Hz
+ * @brief i8080 Bus-Frequenz in Hz
  * 
  * 40 MHz ist ein guter Kompromiss zwischen Geschwindigkeit und Stabilität.
  * Bei Problemen auf 27000000 (27 MHz) reduzieren.
  */
-#define SPI_FREQUENCY  40000000
+#define TFT_WR_FREQ  40000000
 
 // ============================================================================
 // FONT CONFIGURATION

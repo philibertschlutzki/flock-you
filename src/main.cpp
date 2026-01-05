@@ -77,10 +77,7 @@ static const unsigned long ALERT_DISPLAY_MS = 8000;
 // CONFIGURATION
 // ============================================================================
 
-// Hardware Configuration
-#define BUZZER_PIN 3  // GPIO3 (D2) - PWM capable pin on Xiao ESP32 S3
-
-// Audio Configuration
+// Audio Configuration (nicht verwendet auf LILYGO T-Display-S3)
 #define LOW_FREQ 200      // Boot sequence - low pitch
 #define HIGH_FREQ 800     // Boot sequence - high pitch & detection alert
 #define DETECT_FREQ 1000  // Detection alert - high pitch (faster beeps)
@@ -267,8 +264,9 @@ static void display_tick(bool ble_scanning)
 #if !FLOCKYOU_NO_BUZZER
 static void beep(int frequency, int duration_ms)
 {
-    tone(BUZZER_PIN, frequency, duration_ms);
-    delay(duration_ms + 50);
+    // Buzzer not supported on LILYGO T-Display-S3
+    (void)frequency;
+    (void)duration_ms;
 }
 #endif
 
@@ -808,11 +806,6 @@ void setup()
         diagnostics_run_all_tests();
     }
     // ========================================================================
-
-#if !FLOCKYOU_NO_BUZZER
-    pinMode(BUZZER_PIN, OUTPUT);
-    digitalWrite(BUZZER_PIN, LOW);
-#endif
 
     boot_beep_sequence();
 
