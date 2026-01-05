@@ -231,20 +231,20 @@ bool diagnostics_test_backlight()
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.drawString("Backlight Test", 4, 4, 4);
     
-    #ifdef TFT_BACKLIGHT_PIN
+    #ifdef TFT_BL
     // Setup Backlight Pin
-    pinMode(TFT_BACKLIGHT_PIN, OUTPUT);
+    pinMode(TFT_BL, OUTPUT);
     
     // Test 1: Off
     tft.drawString("Backlight: OFF", 4, 40, 2);
-    digitalWrite(TFT_BACKLIGHT_PIN, LOW);
+    digitalWrite(TFT_BL, LOW);
     delay(1000);
     
     // Test 2: On
     #ifdef TFT_BACKLIGHT_ON
-    digitalWrite(TFT_BACKLIGHT_PIN, TFT_BACKLIGHT_ON);
+    digitalWrite(TFT_BL, TFT_BACKLIGHT_ON);
     #else
-    digitalWrite(TFT_BACKLIGHT_PIN, HIGH);
+    digitalWrite(TFT_BL, HIGH);
     #endif
     tft.drawString("Backlight: ON ", 4, 40, 2);
     delay(1000);
@@ -254,23 +254,23 @@ bool diagnostics_test_backlight()
     
     // Ramp up
     for (int i = 0; i <= 255; i += 5) {
-        analogWrite(TFT_BACKLIGHT_PIN, i);
+        analogWrite(TFT_BL, i);
         delay(20);
     }
     
     // Ramp down
     for (int i = 255; i >= 0; i -= 5) {
-        analogWrite(TFT_BACKLIGHT_PIN, i);
+        analogWrite(TFT_BL, i);
         delay(20);
     }
     
     // Back to full brightness
-    analogWrite(TFT_BACKLIGHT_PIN, 255);
+    analogWrite(TFT_BL, 255);
     
     diagnostics_output_result_json("backlight", true, "On/Off + PWM OK");
     return true;
     #else
-    diagnostics_output_result_json("backlight", false, "TFT_BACKLIGHT_PIN not defined");
+    diagnostics_output_result_json("backlight", false, "TFT_BL not defined");
     return false;
     #endif
 #else

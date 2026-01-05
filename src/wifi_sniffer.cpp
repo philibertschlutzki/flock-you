@@ -7,6 +7,7 @@
 #include "config.h"
 #include "detection_patterns.h"
 #include "output.h"
+#include "state.h"
 #include <WiFi.h>
 #include <string.h>
 #include <ctype.h>
@@ -14,9 +15,6 @@
 // Globale Variablen für WiFi Sniffer
 static uint8_t current_channel = 1;
 static unsigned long last_channel_hop = 0;
-extern bool triggered;
-extern bool device_in_range;
-extern unsigned long last_detection_time;
 
 /**
  * @brief WiFi Promiscuous Mode Paket-Handler
