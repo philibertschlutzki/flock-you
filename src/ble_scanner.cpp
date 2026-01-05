@@ -8,6 +8,8 @@
 #include "detection_patterns.h"
 #include "output.h"
 #include "state.h"
+#include "wildcard_match.h"
+#include "pattern_validator.h"
 #include <NimBLEDevice.h>
 #include <NimBLEScan.h>
 #include <NimBLEAdvertisedDevice.h>
@@ -40,7 +42,21 @@ static bool check_raven_service_uuid(NimBLEAdvertisedDevice* device, char* detec
         for (int j = 0; j < (int)(sizeof(raven_service_uuids)/sizeof(raven_service_uuids[0])); j++) {
             const char* p = raven_service_uuids[j];
             if (!p || !*p) continue; // Allowlist kann leer sein
-            if (strcasecmp(uuidStr.c_str(), p) == 0) {
+            
+            // Validiere Pattern (nur einmalig warnen bei ungültigen Patterns)
+#ifdef ENABLE_WILDCARD_VALIDATION
+            if (!validate_pattern(p, PATTERN_TYPE_UUID)) {
+                static bool warned[32] = {false};
+                if (j < 32 && !warned[j]) {
+                    Serial.printf("[WILDCARD] Invalid UUID pattern #%d: '%s' - %s\n", 
+                        j, p, get_validation_error(p, PATTERN_TYPE_UUID));
+                    warned[j] = true;
+                }
+                continue;
+            }
+#endif
+            
+            if (wildcard_match_uuid(p, uuidStr.c_str())) {
                 if (detected_service_out != nullptr) {
                     strncpy(detected_service_out, uuidStr.c_str(), 40);
                 }
@@ -112,13 +128,28 @@ static const char* estimate_raven_firmware_version(NimBLEAdvertisedDevice* devic
  */
 static bool check_mac_prefix(const uint8_t* mac)
 {
-    char mac_str[9];
-    snprintf(mac_str, sizeof(mac_str), "%02x:%02x:%02x", mac[0], mac[1], mac[2]);
+    char mac_str[18];
+    snprintf(mac_str, sizeof(mac_str), "%02x:%02x:%02x:%02x:%02x:%02x", 
+        mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
     for (int i = 0; i < (int)(sizeof(mac_prefixes)/sizeof(mac_prefixes[0])); i++) {
         const char* p = mac_prefixes[i];
         if (!p || !*p) continue; // Allowlist kann leer sein
-        if (strncasecmp(mac_str, p, 8) == 0) {
+        
+        // Validiere Pattern (nur einmalig warnen bei ungültigen Patterns)
+#ifdef ENABLE_WILDCARD_VALIDATION
+        if (!validate_pattern(p, PATTERN_TYPE_MAC)) {
+            static bool warned[64] = {false};
+            if (i < 64 && !warned[i]) {
+                Serial.printf("[WILDCARD] Invalid MAC pattern #%d: '%s' - %s\n", 
+                    i, p, get_validation_error(p, PATTERN_TYPE_MAC));
+                warned[i] = true;
+            }
+            continue;
+        }
+#endif
+        
+        if (wildcard_match_mac(p, mac_str)) {
             return true;
         }
     }
@@ -244,7 +275,21 @@ bool ble_check_device_name_pattern(const char* name)
     for (int i = 0; i < (int)(sizeof(device_name_patterns)/sizeof(device_name_patterns[0])); i++) {
         const char* p = device_name_patterns[i];
         if (!p || !*p) continue; // Allowlist kann leer sein
-        if (strcasestr(name, p)) {
+        
+        // Validiere Pattern (nur einmalig warnen bei ungültigen Patterns)
+#ifdef ENABLE_WILDCARD_VALIDATION
+        if (!validate_pattern(p, PATTERN_TYPE_SSID)) {
+            static bool warned[32] = {false};
+            if (i < 32 && !warned[i]) {
+                Serial.printf("[WILDCARD] Invalid BLE name pattern #%d: '%s' - %s\n", 
+                    i, p, get_validation_error(p, PATTERN_TYPE_SSID));
+                warned[i] = true;
+            }
+            continue;
+        }
+#endif
+        
+        if (wildcard_match_ci(p, name)) {
             return true;
         }
     }

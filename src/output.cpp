@@ -8,6 +8,8 @@
 #include "detection_patterns.h"
 #include "state.h"
 #include "wifi_sniffer.h"
+#include "wildcard_match.h"
+#include "pattern_validator.h"
 #include <ArduinoJson.h>
 
 #if FLOCKYOU_HAS_DISPLAY
@@ -61,7 +63,14 @@ void output_wifi_detection_json(const char* ssid, const uint8_t* mac, int rssi, 
     for (int i = 0; i < (int)(sizeof(wifi_ssid_patterns)/sizeof(wifi_ssid_patterns[0])); i++) {
         const char* p = wifi_ssid_patterns[i];
         if (!p || !*p) continue;
-        if (strcasestr(ssid, p)) {
+        
+#ifdef ENABLE_WILDCARD_VALIDATION
+        if (!validate_pattern(p, PATTERN_TYPE_SSID)) {
+            continue; // Ungültige Patterns überspringen
+        }
+#endif
+        
+        if (wildcard_match_ci(p, ssid)) {
             doc["matched_ssid_pattern"] = p;
             doc["ssid_match_confidence"] = "HIGH";
             ssid_match = true;
@@ -72,7 +81,14 @@ void output_wifi_detection_json(const char* ssid, const uint8_t* mac, int rssi, 
     for (int i = 0; i < (int)(sizeof(mac_prefixes)/sizeof(mac_prefixes[0])); i++) {
         const char* p = mac_prefixes[i];
         if (!p || !*p) continue;
-        if (strncasecmp(mac_prefix, p, 8) == 0) {
+        
+#ifdef ENABLE_WILDCARD_VALIDATION
+        if (!validate_pattern(p, PATTERN_TYPE_MAC)) {
+            continue; // Ungültige Patterns überspringen
+        }
+#endif
+        
+        if (wildcard_match_mac(p, mac_str)) {
             doc["matched_mac_pattern"] = p;
             doc["mac_match_confidence"] = "HIGH";
             mac_match = true;
@@ -137,8 +153,14 @@ void output_ble_detection_json(const char* mac, const char* name, int rssi, cons
     for (int i = 0; i < (int)(sizeof(mac_prefixes)/sizeof(mac_prefixes[0])); i++) {
         const char* p = mac_prefixes[i];
         if (!p || !*p) continue;
-        // Achtung: in BLE wird mit strlen(prefix) verglichen -> leere Strings müssen übersprungen werden.
-        if (strncasecmp(mac, p, strlen(p)) == 0) {
+        
+#ifdef ENABLE_WILDCARD_VALIDATION
+        if (!validate_pattern(p, PATTERN_TYPE_MAC)) {
+            continue; // Ungültige Patterns überspringen
+        }
+#endif
+        
+        if (wildcard_match_mac(p, mac)) {
             doc["matched_mac_pattern"] = p;
             doc["mac_match_confidence"] = "HIGH";
             mac_match = true;
@@ -150,7 +172,14 @@ void output_ble_detection_json(const char* mac, const char* name, int rssi, cons
         for (int i = 0; i < (int)(sizeof(device_name_patterns)/sizeof(device_name_patterns[0])); i++) {
             const char* p = device_name_patterns[i];
             if (!p || !*p) continue;
-            if (strcasestr(name, p)) {
+            
+#ifdef ENABLE_WILDCARD_VALIDATION
+            if (!validate_pattern(p, PATTERN_TYPE_SSID)) {
+                continue; // Ungültige Patterns überspringen
+            }
+#endif
+            
+            if (wildcard_match_ci(p, name)) {
                 doc["matched_name_pattern"] = p;
                 doc["name_match_confidence"] = "HIGH";
                 name_match = true;

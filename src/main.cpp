@@ -44,6 +44,7 @@
 #include "ble_scanner.h"
 #include "output.h"
 #include "diagnostics.h"
+#include "pattern_startup_check.h"
 
 #if FLOCKYOU_HAS_DISPLAY
 #include "ui_display.h"
@@ -103,6 +104,11 @@ void setup()
     // ========================================================================
 
     Serial.println("Starting Flock You Detection System...\n");
+
+    // Validiere alle Patterns beim Boot
+#ifdef ENABLE_WILDCARD_VALIDATION
+    validate_all_patterns();
+#endif
 
     // Initialisiere Display
     #if FLOCKYOU_HAS_DISPLAY

@@ -8,6 +8,8 @@
 #include "detection_patterns.h"
 #include "output.h"
 #include "state.h"
+#include "wildcard_match.h"
+#include "pattern_validator.h"
 #include <WiFi.h>
 #include <string.h>
 #include <ctype.h>
@@ -115,7 +117,21 @@ bool wifi_check_ssid_pattern(const char* ssid)
     for (int i = 0; i < (int)(sizeof(wifi_ssid_patterns)/sizeof(wifi_ssid_patterns[0])); i++) {
         const char* p = wifi_ssid_patterns[i];
         if (!p || !*p) continue; // Allowlist kann leer sein
-        if (strcasestr(ssid, p)) {
+        
+        // Validiere Pattern (nur einmalig warnen bei ungültigen Patterns)
+#ifdef ENABLE_WILDCARD_VALIDATION
+        if (!validate_pattern(p, PATTERN_TYPE_SSID)) {
+            static bool warned[32] = {false};
+            if (i < 32 && !warned[i]) {
+                Serial.printf("[WILDCARD] Invalid SSID pattern #%d: '%s' - %s\n", 
+                    i, p, get_validation_error(p, PATTERN_TYPE_SSID));
+                warned[i] = true;
+            }
+            continue;
+        }
+#endif
+        
+        if (wildcard_match_ci(p, ssid)) {
             return true;
         }
     }
@@ -124,13 +140,28 @@ bool wifi_check_ssid_pattern(const char* ssid)
 
 bool wifi_check_mac_prefix(const uint8_t* mac)
 {
-    char mac_str[9];
-    snprintf(mac_str, sizeof(mac_str), "%02x:%02x:%02x", mac[0], mac[1], mac[2]);
+    char mac_str[18];
+    snprintf(mac_str, sizeof(mac_str), "%02x:%02x:%02x:%02x:%02x:%02x", 
+        mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
     for (int i = 0; i < (int)(sizeof(mac_prefixes)/sizeof(mac_prefixes[0])); i++) {
         const char* p = mac_prefixes[i];
         if (!p || !*p) continue; // Allowlist kann leer sein
-        if (strncasecmp(mac_str, p, 8) == 0) {
+        
+        // Validiere Pattern (nur einmalig warnen bei ungültigen Patterns)
+#ifdef ENABLE_WILDCARD_VALIDATION
+        if (!validate_pattern(p, PATTERN_TYPE_MAC)) {
+            static bool warned[64] = {false};
+            if (i < 64 && !warned[i]) {
+                Serial.printf("[WILDCARD] Invalid MAC pattern #%d: '%s' - %s\n", 
+                    i, p, get_validation_error(p, PATTERN_TYPE_MAC));
+                warned[i] = true;
+            }
+            continue;
+        }
+#endif
+        
+        if (wildcard_match_mac(p, mac_str)) {
             return true;
         }
     }
