@@ -65,18 +65,6 @@
 #define BUTTON_B_PIN 14
 
 // ============================================================================
-// AUDIO CONFIGURATION (nur für Builds mit Buzzer - derzeit nicht unterstützt)
-// ============================================================================
-
-#define LOW_FREQ 200           ///< Boot-Sequenz - tiefe Frequenz
-#define HIGH_FREQ 800          ///< Boot-Sequenz - hohe Frequenz
-#define DETECT_FREQ 1000       ///< Detektions-Alert - hohe Frequenz
-#define HEARTBEAT_FREQ 600     ///< Heartbeat-Puls-Frequenz
-#define BOOT_BEEP_DURATION 300         ///< Boot-Piep Dauer in ms
-#define DETECT_BEEP_DURATION 150       ///< Detektions-Piep Dauer in ms
-#define HEARTBEAT_DURATION 100         ///< Heartbeat-Puls Dauer in ms
-
-// ============================================================================
 // WIFI PROMISCUOUS MODE CONFIGURATION
 // ============================================================================
 

@@ -118,12 +118,12 @@
 // ============================================================================
 
 /**
- * @brief i8080 Bus-Frequenz in Hz
+ * @brief i8080 Bus-Frequenz in Hz (40 MHz)
  * 
  * 40 MHz ist ein guter Kompromiss zwischen Geschwindigkeit und Stabilität.
- * Bei Problemen auf 27000000 (27 MHz) reduzieren.
+ * Bei Problemen auf 27000000UL (27 MHz) reduzieren.
  */
-#define TFT_WR_FREQ  40000000
+#define TFT_WR_FREQ  40000000UL
 
 // ============================================================================
 // FONT CONFIGURATION
