@@ -62,6 +62,9 @@ def process_csv_files(csv_dir: str) -> Tuple[Set[str], Set[Tuple[int, ...]], Set
     ble_macs = set()
     ouis = set()
     
+    # BLE/Bluetooth type identifiers
+    BLE_TYPES = ['BLE', 'BT']
+    
     csv_files = [f for f in os.listdir(csv_dir) if f.endswith('.csv')]
     print(f"Processing {len(csv_files)} CSV files from {csv_dir}")
     
@@ -77,13 +80,13 @@ def process_csv_files(csv_dir: str) -> Tuple[Set[str], Set[Tuple[int, ...]], Set
                     # Determine protocol (wifi vs bluetooth_le)
                     protocol = None
                     
-                    # Check if it's BLE (has 'type' column with 'BLE' value)
-                    if 'type' in row and row['type'] == 'BLE':
+                    # Check if it's BLE/BT (has 'type' column with 'BLE' or 'BT' value)
+                    if 'type' in row and row['type'] in BLE_TYPES:
                         protocol = 'bluetooth_le'
                     # Check if it has WiFi-specific columns
                     elif 'ssid' in row and 'netid' in row:
-                        # If has ssid but type is BLE, it's BLE with ssid field
-                        if 'type' in row and row['type'] == 'BLE':
+                        # If has ssid but type is BLE/BT, it's BLE with ssid field
+                        if 'type' in row and row['type'] in BLE_TYPES:
                             protocol = 'bluetooth_le'
                         else:
                             protocol = 'wifi'
