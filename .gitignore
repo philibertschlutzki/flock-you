@@ -4,3 +4,19 @@
 .vscode/
 
 .DS_Store
+
+# Python virtual environments
+api/venv/
+api/__pycache__/
+
+# Build artifacts
+*.o
+*.elf
+*.bin
+*.hex
+
+# IDE files
+.idea/
+*.swp
+*.swo
+*~

@@ -1,3 +1,31 @@
+"""
+Flock You Web API Server
+
+Dieses Modul implementiert den Flask-basierten Web-Server für das Flock You
+Detection System. Es bietet:
+
+- Echtzeit-Web-Dashboard mit Live-Karte
+- Serial Port Kommunikation mit ESP32 Device
+- GPS Integration (optional)
+- Datenexport (CSV, KML, GeoJSON)
+- Persistente Speicherung von Detections
+- WebSocket-basierte Echtzeit-Updates
+
+Dependencies:
+    - Flask: Web-Framework
+    - Flask-SocketIO: WebSocket Support
+    - pyserial: Serial Port Kommunikation
+    - Standard-Bibliotheken (json, csv, datetime, threading, etc.)
+
+Usage:
+    python flockyou.py
+    
+    Öffne Browser: http://localhost:5000
+
+Autor: Flock You Team
+Version: 0.1.0
+"""
+
 from flask import Flask, render_template, request, jsonify, send_file
 import json
 import csv
