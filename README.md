@@ -282,6 +282,8 @@ Definiert in `platformio.ini`:
 Die Erkennung basiert auf **Pattern-Listen** (Filter), die in `include/detection_patterns.h` definiert sind.
 Dort kannst du festlegen, **welche WiFi-/BLE-Signale** als „Treffer“ gelten (SSID, BLE-Name, MAC, Raven-UUID).
 
+**Detaillierte Referenz (empfohlen):** 📘 **[Filter & Matching (Deutsch)](docs/FILTERS_AND_MATCHING_DE.md)**
+
 #### Welche Filter gibt es?
 
 Die Firmware kann (je nach Erkennungsquelle) über diese Listen matchen:
