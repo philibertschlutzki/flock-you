@@ -3,246 +3,194 @@
 Diese Anleitung beschreibt, wie die Erkennungslogik für WiFi- und BLE-Events über Listen/Regeln angepasst werden kann.
 Ziel: Regeln sind **datengetrieben** (Listen), und die Scan-Logik bleibt stabil.
 
-> Empfehlung: Die Regeln als C++-Header (compile-time) pflegen, weil das auf Embedded i.d.R. am robustesten ist (kein Dateisystem nötig, keine Parser-Abhängigkeiten).
+> Stand im Code (main): Die Filter arbeiten derzeit überwiegend mit **Substring-Matching** (case-insensitiv) sowie MAC-Präfix-Vergleich auf den ersten 3 Bytes.
 
 ---
 
-## 1) Grundprinzip: Datengetriebene Regeln
+## 1) Schnellstart (Anfänger)
 
-### Option A (empfohlen): Compile-time Konfiguration (Header)
-1. Lege eine Datei an: `include/user_rules.h`
-2. Dort werden Listen gepflegt (MAC-Präfixe, SSID-Pattern, BLE-Namen, Service-UUIDs).
-3. Die Scan-/Parser-Module inkludieren diese Datei und nutzen die Regeln.
+### Wo wird aktuell konfiguriert?
+Die Filterlisten sind im Projekt bereits zentral in `include/detection_patterns.h` abgelegt:
+- `wifi_ssid_patterns[]` (WiFi SSID-Substring)
+- `mac_prefixes[]` (MAC/OUI-Präfixe im Format `aa:bb:cc`)
+- `device_name_patterns[]` (BLE Name-Substring)
+- `raven_service_uuids[]` + `RAVEN_*_SERVICE` (Raven Service UUIDs)
 
-**Beispiel: `include/user_rules.h`**
-```cpp
-#pragma once
-#include <cstddef>
-#include <cstdint>
+Für die meisten Anpassungen reicht es, **nur diese Arrays** zu erweitern.
 
-// -----------------------------
-// 1) MAC-Präfixe / OUIs (3 Bytes)
-// -----------------------------
-static const uint8_t KNOWN_OUIS[][3] = {
-  {0xFC, 0xFB, 0xFB}, // Beispiel
-  {0xAC, 0xCF, 0x23}, // Beispiel
-};
-static constexpr size_t KNOWN_OUIS_COUNT = sizeof(KNOWN_OUIS) / sizeof(KNOWN_OUIS[0]);
-
-// -----------------------------
-// 2) SSID-Patterns (Wildcards)
-// - '*' = beliebige Länge
-// - '?' = genau 1 Zeichen
-// -----------------------------
-static const char* SSID_PATTERNS[] = {
-  "RAVEN_*",
-  "MyHomeWiFi",
-  "*-Guest",
-};
-static constexpr size_t SSID_PATTERNS_COUNT = sizeof(SSID_PATTERNS) / sizeof(SSID_PATTERNS[0]);
-
-// -----------------------------
-// 3) BLE Device Name-Patterns
-// (z.B. Prefix/Substring-Listen)
-// -----------------------------
-static const char* BLE_NAME_PATTERNS[] = {
-  "Raven",
-  "RAVEN-",
-  "ShotSense", // Beispiel
-};
-static constexpr size_t BLE_NAME_PATTERNS_COUNT = sizeof(BLE_NAME_PATTERNS) / sizeof(BLE_NAME_PATTERNS[0]);
-
-// -----------------------------
-// 4) BLE Service UUIDs (Raven-Erkennung)
-// Unterstützt 16-bit und 128-bit UUIDs
-// -----------------------------
-
-// 16-bit UUIDs (Bluetooth SIG short UUIDs)
-static const uint16_t RAVEN_SERVICE_UUID16[] = {
-  0x180D, // Beispiel (Heart Rate) -> ersetzen durch Raven-UUIDs
-};
-static constexpr size_t RAVEN_SERVICE_UUID16_COUNT = sizeof(RAVEN_SERVICE_UUID16) / sizeof(RAVEN_SERVICE_UUID16[0]);
-
-// 128-bit UUIDs (Little Endian Byte-Order, wie in Advertising-Daten üblich)
-static const uint8_t RAVEN_SERVICE_UUID128[][16] = {
-  // Beispiel: 00112233-4455-6677-8899-aabbccddeeff
-  {0xff,0xee,0xdd,0xcc,0xbb,0xaa,0x99,0x88,0x77,0x66,0x55,0x44,0x33,0x22,0x11,0x00},
-};
-static constexpr size_t RAVEN_SERVICE_UUID128_COUNT = sizeof(RAVEN_SERVICE_UUID128) / sizeof(RAVEN_SERVICE_UUID128[0]);
-```
-
-### Option B: Runtime Konfiguration (JSON/CSV im Flash)
-Wenn das Projekt bereits SPIFFS/LittleFS nutzt, können Listen als Datei gepflegt werden (z.B. `datasets/*.csv`).
-Dann braucht es:
-- Parser + Validierung
-- Fallback-Regeln bei fehlender Datei
-- Versionierung des Formats
+### Änderungen in 3 Schritten
+1. `include/detection_patterns.h` öffnen.
+2. Passende Liste erweitern (siehe unten).
+3. Build prüfen: `pio run`.
 
 ---
 
-## 2) MAC-Adress-Filterung (OUI / Präfix-Matching)
+## 2) MAC-Adress-Filterung (OUI / Präfix)
 
-### Ziel
-Geräte anhand bekannter Hersteller-Präfixe erkennen (OUI = erste 24 Bit / 3 Bytes einer MAC).
+### Was wird verglichen?
+Im aktuellen Code wird aus der MAC-Adresse nur der Herstellerpräfix (OUI) gebildet: `aa:bb:cc` (erste 3 Bytes), und dann case-insensitiv gegen `mac_prefixes[]` verglichen.
 
-### Matching-Regel
-1. Aus beobachteter MAC die ersten drei Bytes extrahieren.
-2. Gegen `KNOWN_OUIS` vergleichen.
-3. Treffer => Gerät als „bekannt“ markieren (oder priorisieren, labeln, etc.).
+> Hinweis: „OUI“ bezeichnet die ersten 24 Bit einer MAC-Adresse (3 Bytes). [web:14]
 
-**Beispiel-Funktion (OUI-Match):**
-```cpp
-#include "user_rules.h"
-
-static bool is_known_oui(const uint8_t mac[6]) {
-  for (size_t i = 0; i < KNOWN_OUIS_COUNT; i++) {
-    if (mac[0] == KNOWN_OUIS[i][0] &&
-        mac[1] == KNOWN_OUIS[i][1] &&
-        mac[2] == KNOWN_OUIS[i][2]) {
-      return true;
-    }
-  }
-  return false;
-}
+### Liste anpassen (Anfänger)
+In `include/detection_patterns.h` unter `mac_prefixes[]` neue Einträge hinzufügen:
+```c
+static const char* mac_prefixes[] = {
+    "58:8e:81",
+    "e4:aa:ea",
+    "aa:bb:cc" // neuer Präfix
+};
 ```
 
-### Pflege der Liste
-- Neue OUI hinzufügen, wenn ein relevantes Gerät in Logs auftaucht.
-- OUIs in Hex pflegen (3 Bytes), ohne „:“-Schreibweise.
+### Häufige Fehler
+- Falsches Format: Es muss exakt `aa:bb:cc` sein (8 Zeichen inkl. Doppelpunkte).
+- Einträge ohne Komma.
 
 ---
 
 ## 3) SSID-Muster-Abgleich (WiFi)
 
+### Aktueller Stand (Substring)
+Im WiFi-Sniffer wird geprüft, ob die SSID **einen** der Einträge aus `wifi_ssid_patterns[]` enthält (case-insensitiv).
+Beispiel: Ein Pattern `Flock` matcht auch `Flock-123`.
+
+### Liste anpassen (Anfänger)
+In `include/detection_patterns.h` unter `wifi_ssid_patterns[]` erweitern:
+```c
+static const char* wifi_ssid_patterns[] = {
+    "flock",
+    "Pigvision",
+    "MyTestSSID" // neu
+};
+```
+
+---
+
+## 4) BLE Gerätenamen-Erkennung
+
+### Aktueller Stand (Substring)
+Im BLE-Scanner wird geprüft, ob der beworbene Gerätename **einen** der Einträge aus `device_name_patterns[]` enthält (case-insensitiv).
+
+### Liste anpassen (Anfänger)
+In `include/detection_patterns.h` unter `device_name_patterns[]` erweitern:
+```c
+static const char* device_name_patterns[] = {
+    "Flock",
+    "Penguin",
+    "MyBLEDevice" // neu
+};
+```
+
+---
+
+## 5) BLE Service UUID Erkennung (Raven)
+
+### Aktueller Stand (exakter UUID-String)
+Raven-Geräte werden über Service-UUIDs erkannt:
+- Der Scanner liest alle beworbenen Service UUIDs.
+- Jede UUID wird zu einem String normalisiert.
+- Dann wird **exakt** (case-insensitiv) gegen `raven_service_uuids[]` verglichen.
+
+### Liste anpassen (Anfänger)
+In `include/detection_patterns.h`:
+1. Neue UUID als `#define` ergänzen (empfohlen, damit sie benannt ist).
+2. Diese UUID in `raven_service_uuids[]` aufnehmen.
+
+Beispiel:
+```c
+#define RAVEN_NEW_SERVICE "00003600-0000-1000-8000-00805f9b34fb"
+
+static const char* raven_service_uuids[] = {
+    RAVEN_DEVICE_INFO_SERVICE,
+    RAVEN_NEW_SERVICE
+};
+```
+
+---
+
+## 6) Fortgeschritten: Wildcards nachrüsten (SSID + BLE Name)
+
+Die aktuelle Implementierung nutzt Substring-Matching. Wenn stattdessen Wildcards (z.B. `RAVEN_*`, `*-Guest`) benötigt werden, kann das ohne große Refactorings nachgerüstet werden.
+
 ### Ziel
-Access-Points/Clients/Beacons anhand SSID-Namen identifizieren.
+- Patterns sollen `*` (beliebige Länge) und `?` (genau 1 Zeichen) unterstützen.
+- Bestehende Listen bleiben Strings, aber werden als Wildcard-Pattern interpretiert.
 
-### Empfohlenes Pattern-System
-- `*` matcht beliebige Länge (inkl. leer)
-- `?` matcht genau 1 Zeichen
-- Alles andere ist Literal-Match
-
-**Wildcard-Matcher (einfach, embedded-tauglich):**
+### Schritt 1: Wildcard-Matcher als Helper
+Lege eine kleine Helper-Datei an, z.B. `include/wildcard_match.h`:
 ```cpp
-static bool wildcard_match(const char* pattern, const char* s) {
+#pragma once
+
+static inline bool wildcard_match_ci(const char* pattern, const char* s) {
+  if (!pattern || !s) return false;
+
+  // case-insensitive Vergleich ohne Heap, embedded-tauglich
+  auto lower = [](char c) -> char {
+    return (c >= 'A' && c <= 'Z') ? (char)(c + 32) : c;
+  };
+
   const char* star = nullptr;
   const char* ss = s;
 
   while (*s) {
-    if (*pattern == '?' || *pattern == *s) { pattern++; s++; continue; }
-    if (*pattern == '*') { star = pattern++; ss = s; continue; }
+    char pc = lower(*pattern);
+    char sc = lower(*s);
+
+    if (pc == '?' || pc == sc) { pattern++; s++; continue; }
+    if (pc == '*') { star = pattern++; ss = s; continue; }
     if (star) { pattern = star + 1; s = ++ss; continue; }
     return false;
   }
+
   while (*pattern == '*') pattern++;
   return *pattern == '\0';
 }
+```
 
-static bool ssid_matches_any(const char* ssid) {
-  for (size_t i = 0; i < SSID_PATTERNS_COUNT; i++) {
-    if (wildcard_match(SSID_PATTERNS[i], ssid)) return true;
+### Schritt 2: WiFi SSID Matching umstellen
+In `src/wifi_sniffer.cpp` die Funktion `wifi_check_ssid_pattern()` von `strcasestr()` auf den Wildcard-Matcher umstellen:
+- Vorher: „SSID enthält Pattern“
+- Nachher: „SSID matcht Wildcard-Pattern“
+
+Pseudocode:
+```cpp
+#include "wildcard_match.h"
+
+bool wifi_check_ssid_pattern(const char* ssid) {
+  if (!ssid) return false;
+  for (int i = 0; i < (int)(sizeof(wifi_ssid_patterns)/sizeof(wifi_ssid_patterns[0])); i++) {
+    if (wildcard_match_ci(wifi_ssid_patterns[i], ssid)) return true;
   }
   return false;
 }
 ```
 
-### Praxis-Tipps
-- Eher wenige, klare Patterns statt vieler spezieller.
-- Sonderfälle: versteckte SSIDs (leer), ungültige/kaputte Strings -> defensiv behandeln.
+### Schritt 3: BLE Device Name Matching umstellen
+Analog in `src/ble_scanner.cpp` die Funktion `ble_check_device_name_pattern()` auf `wildcard_match_ci()` umstellen.
+
+### Schritt 4: Patterns anpassen
+Danach können in `include/detection_patterns.h` echte Wildcards verwendet werden:
+```c
+static const char* wifi_ssid_patterns[] = {
+  "RAVEN_*",
+  "*-Guest"
+};
+
+static const char* device_name_patterns[] = {
+  "Raven?",
+  "RAVEN-*"
+};
+```
+
+### Test-Hinweise
+- Mindestens ein Pattern ohne Wildcard behalten (Regression-Check).
+- Für Debug: SSID/Name + matchendes Pattern mitloggen.
 
 ---
 
-## 4) BLE Gerätenamen-Erkennung (Advertising Name)
-
-### Ziel
-BLE-Geräte anhand des beworbenen Namens (Complete Local Name / Shortened Local Name) erkennen.
-
-### Matching-Strategien
-- Prefix-Match (schnell, robust): `startsWith("Raven")`
-- Substring-Match (flexibel): enthält `"Raven"` irgendwo
-- Wildcards analog SSID (optional)
-
-**Beispiel (Substring):**
-```cpp
-#include <cstring>
-#include "user_rules.h"
-
-static bool ble_name_matches_any(const char* name) {
-  if (!name || !*name) return false;
-  for (size_t i = 0; i < BLE_NAME_PATTERNS_COUNT; i++) {
-    if (std::strstr(name, BLE_NAME_PATTERNS[i]) != nullptr) return true;
-  }
-  return false;
-}
-```
-
-### Hinweis
-Viele Geräte senden den Namen nicht in jedem Advertisement (oder nur „shortened“).
-Deshalb: Name-Match als **Signal**, nicht als alleinige Wahrheit behandeln.
-
----
-
-## 5) BLE Service UUID Erkennung (Raven Shot Detection)
-
-### Ziel
-Raven-Schusserkennungsgeräte über Service-UUID(s) in Advertising-Daten identifizieren.
-
-### Datenquellen in BLE Advertising
-- „Complete List of 16-bit Service UUIDs“ (AD Type 0x03)
-- „Incomplete List of 16-bit Service UUIDs“ (AD Type 0x02)
-- „Complete List of 128-bit Service UUIDs“ (0x07)
-- „Incomplete List of 128-bit Service UUIDs“ (0x06)
-
-### Matching-Logik
-1. Advertising Payload parsen (TLV-Struktur).
-2. UUID-Listen extrahieren (16-bit und/oder 128-bit).
-3. Gegen `RAVEN_SERVICE_UUID16` und `RAVEN_SERVICE_UUID128` vergleichen.
-4. Treffer => Gerät als „Raven“ markieren (hohe Priorität).
-
-**Beispiel: 16-bit UUID Lookup**
-```cpp
-#include "user_rules.h"
-
-static bool uuid16_is_raven(uint16_t uuid) {
-  for (size_t i = 0; i < RAVEN_SERVICE_UUID16_COUNT; i++) {
-    if (uuid == RAVEN_SERVICE_UUID16[i]) return true;
-  }
-  return false;
-}
-```
-
-**Beispiel: 128-bit UUID Lookup**
-```cpp
-#include <cstring>
-#include "user_rules.h"
-
-static bool uuid128_is_raven(const uint8_t u[16]) {
-  for (size_t i = 0; i < RAVEN_SERVICE_UUID128_COUNT; i++) {
-    if (std::memcmp(u, RAVEN_SERVICE_UUID128[i], 16) == 0) return true;
-  }
-  return false;
-}
-```
-
-### Wichtig: Byte-Order
-BLE Advertising liefert 128-bit UUIDs typischerweise „little endian“ (byte-reversed gegenüber der üblichen UUID-String-Schreibweise).
-Beim Eintragen der Werte unbedingt die gleiche Byte-Reihenfolge verwenden wie der Parser liefert.
-
----
-
-## 6) Testen / Verifizieren
+## 7) Testen / Verifizieren
 
 Empfohlenes Vorgehen:
-1. Debug-Log: Für jedes Event die extrahierten Felder loggen (MAC/OUI, SSID, BLE Name, Service UUIDs).
-2. Unit-Test / Sim-Test: Parser-Funktionen mit gespeicherten Beispiel-Frames füttern.
-3. Feldtest: Ein bekanntes Testgerät pro Kategorie als „Golden Sample“.
-
----
-
-## 7) Checkliste: Regeln erweitern
-
-- [ ] Neues Gerät entdeckt → OUI ergänzen?
-- [ ] Neues WLAN → SSID-Pattern ergänzen?
-- [ ] Neues BLE-Gerät → Name-Pattern ergänzen?
-- [ ] Raven-Gerät → Service-UUID ergänzen (16/128)?
-- [ ] Danach: Build + Smoke-Test (Scan läuft, keine Abstürze)
+1. Debug-Log: Für jedes Event die extrahierten Felder loggen (MAC-Präfix, SSID, BLE Name, Service UUIDs).
+2. Feldtest: Ein bekanntes Testgerät pro Kategorie als „Golden Sample“.
+3. Nach Änderungen immer `pio run`.
