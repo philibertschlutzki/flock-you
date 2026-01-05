@@ -1,7 +1,5 @@
 # Flock You: Flock Safety Erkennungssystem
 
-<img src="flock.png" alt="Flock You" width="300px">
-
 **Professionelle Überwachungskamera-Erkennung für das LILYGO T-Display-S3 Board**
 
 ---
