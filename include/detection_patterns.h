@@ -95,13 +95,14 @@ static const char* wifi_ssid_patterns[] = {
 };
 #else
 static const char* wifi_ssid_patterns[] = {
-    // --- Legacy Patterns (aus beobachteten Deployments) ---
-    "flock",
-    "Flock",
-    "FLOCK",
-    "FS Ext Battery",
-    "Penguin",
-    "Pigvision"
+    // --- Patterns mit Wildcard-Support ---
+    // Hinweis: Um altes Substring-Verhalten zu erhalten, wurde "flock" → "*flock*" umgewandelt
+    "*flock*",        // Matcht überall "flock" (backward-compatible)
+    "*Flock*",        // Matcht überall "Flock" (backward-compatible)
+    "*FLOCK*",        // Matcht überall "FLOCK" (backward-compatible)
+    "*FS Ext Battery*",  // Matcht überall "FS Ext Battery"
+    "*Penguin*",      // Matcht überall "Penguin"
+    "*Pigvision*"     // Matcht überall "Pigvision"
 };
 #endif
 
@@ -135,11 +136,12 @@ static const char* mac_prefixes[] = {
 };
 #else
 static const char* mac_prefixes[] = {
-    // --- Legacy Patterns (Auszug) ---
-    "58:8e:81", "cc:cc:cc", "ec:1b:bd", "90:35:ea", "04:0d:84",
-    "f0:82:c0", "1c:34:f1", "38:5b:44", "94:34:69", "b4:e3:f9",
-    "70:c9:4e", "3c:91:80", "d8:f3:bc", "80:30:49", "14:5a:fc",
-    "74:4c:a1", "08:3a:88", "9c:2f:9d", "94:08:53", "e4:aa:ea"
+    // --- Patterns mit Wildcard-Support (OUI Präfixe) ---
+    // Hinweis: Vollständige MAC-Präfixe (3 Bytes) mit Wildcard für Suffix
+    "58:8e:81:*", "cc:cc:cc:*", "ec:1b:bd:*", "90:35:ea:*", "04:0d:84:*",
+    "f0:82:c0:*", "1c:34:f1:*", "38:5b:44:*", "94:34:69:*", "b4:e3:f9:*",
+    "70:c9:4e:*", "3c:91:80:*", "d8:f3:bc:*", "80:30:49:*", "14:5a:fc:*",
+    "74:4c:a1:*", "08:3a:88:*", "9c:2f:9d:*", "94:08:53:*", "e4:aa:ea:*"
 };
 #endif
 
@@ -168,10 +170,12 @@ static const char* device_name_patterns[] = {
 };
 #else
 static const char* device_name_patterns[] = {
-    "FS Ext Battery",
-    "Penguin",
-    "Flock",
-    "Pigvision"
+    // --- Patterns mit Wildcard-Support ---
+    // Hinweis: Um altes Substring-Verhalten zu erhalten, wurden Patterns mit * umgeben
+    "*FS Ext Battery*",
+    "*Penguin*",
+    "*Flock*",
+    "*Pigvision*"
 };
 #endif
 
