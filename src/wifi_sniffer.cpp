@@ -3,6 +3,8 @@
  * @brief WiFi Promiscuous Mode Sniffer Implementierung
  */
 
+#define WIFI_DEBUG 1
+
 #include "wifi_sniffer.h"
 #include "config.h"
 #include "detection_patterns.h"
@@ -37,6 +39,13 @@ static void wifi_sniffer_packet_handler(void* buf, wifi_promiscuous_pkt_type_t t
     const wifi_promiscuous_pkt_t* ppkt = (wifi_promiscuous_pkt_t*)buf;
     const uint8_t* payload = ppkt->payload;
     const int len = ppkt->rx_ctrl.sig_len;
+
+    // Rate-limited logging to confirm WiFi activity without flooding
+    static unsigned long last_rx_log = 0;
+    if (millis() - last_rx_log > 2000) {
+        Serial.printf("[WiFi] RX Active (Len: %d, RSSI: %d)\n", len, ppkt->rx_ctrl.rssi);
+        last_rx_log = millis();
+    }
 
     if (len < 36) return;
 
@@ -91,6 +100,7 @@ void wifi_sniffer_init()
     esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_packet_handler);
     esp_wifi_set_channel(current_channel, WIFI_SECOND_CHAN_NONE);
 
+    Serial.println("[WiFi] Sniffer INITIALIZED - Monitor Mode Active");
     Serial.printf("WiFi promiscuous mode enabled on channel %d\n", current_channel);
     Serial.println("Monitoring probe requests and beacons...");
 }
@@ -104,6 +114,7 @@ void wifi_sniffer_hop_channel()
             current_channel = 1;
         }
         esp_wifi_set_channel(current_channel, WIFI_SECOND_CHAN_NONE);
+        Serial.printf("[WiFi] Channel Hop -> %d\n", current_channel);
         last_channel_hop = now;
     }
 }
