@@ -36,7 +36,7 @@ A Flask-based web dashboard for real-time monitoring and analysis of Flock Safet
 
 2. **Run the application**:
    ```bash
-   python app.py
+   python flockyou.py
    ```
 
 3. **Access the dashboard**:
@@ -106,13 +106,16 @@ The dashboard supports standard NMEA GPS dongles that output GPGGA sentences. Co
 
 ## File Structure
 ```
-webapp/
-├── app.py              # Main Flask application
+api/
+├── flockyou.py         # Main Flask application
 ├── requirements.txt    # Python dependencies
+├── oui.txt             # IEEE OUI database
 ├── templates/
 │   └── index.html     # Web dashboard template
-├── exports/           # Generated export files
-└── README.md         # This file
+├── data/               # Persistent storage
+├── exports/            # Generated export files
+├── README.md           # This file
+└── ANLEITUNG.md        # German documentation
 ```
 
 ## Troubleshooting
@@ -144,7 +147,7 @@ webapp/
 ## Development
 
 ### Adding New Features
-- Modify `app.py` for backend functionality
+- Modify `flockyou.py` for backend functionality
 - Update `templates/index.html` for frontend changes
 - Add new API endpoints as needed
 - Update requirements.txt for new dependencies
@@ -154,3 +157,7 @@ webapp/
 - Verify export functionality with sample data
 - Test real-time updates with multiple browser windows
 - Validate JSON data format compatibility
+
+## Documentation
+
+For detailed German documentation, see [ANLEITUNG.md](ANLEITUNG.md).
