@@ -261,15 +261,6 @@ static void display_tick(bool ble_scanning)
 // AUDIO SYSTEM
 // ============================================================================
 
-#if !FLOCKYOU_NO_BUZZER
-static void beep(int frequency, int duration_ms)
-{
-    // Buzzer not supported on LILYGO T-Display-S3
-    (void)frequency;
-    (void)duration_ms;
-}
-#endif
-
 static void boot_beep_sequence()
 {
 #if FLOCKYOU_NO_BUZZER
