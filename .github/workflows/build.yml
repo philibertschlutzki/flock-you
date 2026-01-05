@@ -9,16 +9,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-        
+
     - name: Cache PlatformIO
       uses: actions/cache@v4
       with:
@@ -28,25 +28,83 @@ jobs:
         key: ${{ runner.os }}-pio-${{ hashFiles('**/platformio.ini') }}
         restore-keys: |
           ${{ runner.os }}-pio-
-          
+
     - name: Install PlatformIO
       run: |
         pip install --upgrade platformio
         pio --version
-        
+
     - name: Build firmware for LILYGO T-Display-S3
       run: |
         pio run -e lilygo_tdisplay_s3
-        
+
+    - name: Package flashable firmware images
+      shell: bash
+      run: |
+        set -euo pipefail
+        BUILD_DIR=".pio/build/lilygo_tdisplay_s3"
+        DIST_DIR="dist/firmware-lilygo-tdisplay-s3"
+        mkdir -p "${DIST_DIR}"
+
+        echo "== Build dir =="
+        ls -lah "${BUILD_DIR}"
+
+        # Ensure required outputs exist for a full flash package
+        test -f "${BUILD_DIR}/firmware.bin"
+        test -f "${BUILD_DIR}/firmware.elf"
+        test -f "${BUILD_DIR}/bootloader.bin"
+        test -f "${BUILD_DIR}/partitions.bin"
+
+        cp "${BUILD_DIR}/firmware.bin" "${DIST_DIR}/firmware.bin"
+        cp "${BUILD_DIR}/firmware.elf" "${DIST_DIR}/firmware.elf"
+        cp "${BUILD_DIR}/bootloader.bin" "${DIST_DIR}/bootloader.bin"
+        cp "${BUILD_DIR}/partitions.bin" "${DIST_DIR}/partitions.bin"
+
+        # Optional, depends on framework/layout
+        if [ -f "${BUILD_DIR}/boot_app0.bin" ]; then
+          cp "${BUILD_DIR}/boot_app0.bin" "${DIST_DIR}/boot_app0.bin"
+        fi
+
+        # Flash offsets documentation for manual flashing
+        {
+          echo "0x0 bootloader.bin"
+          echo "0x8000 partitions.bin"
+          if [ -f "${DIST_DIR}/boot_app0.bin" ]; then
+            echo "0xe000 boot_app0.bin"
+          fi
+          echo "0x10000 firmware.bin"
+        } > "${DIST_DIR}/flash_args.txt"
+
+        # Create a single merged binary so 'write_flash 0x0 firmware_merged.bin' works
+        python -m pip install -U esptool
+        if [ -f "${DIST_DIR}/boot_app0.bin" ]; then
+          python -m esptool --chip esp32s3 merge_bin \
+            -o "${DIST_DIR}/firmware_merged.bin" \
+            --flash_mode qio --flash_size 16MB \
+            0x0 "${DIST_DIR}/bootloader.bin" \
+            0x8000 "${DIST_DIR}/partitions.bin" \
+            0xe000 "${DIST_DIR}/boot_app0.bin" \
+            0x10000 "${DIST_DIR}/firmware.bin"
+        else
+          python -m esptool --chip esp32s3 merge_bin \
+            -o "${DIST_DIR}/firmware_merged.bin" \
+            --flash_mode qio --flash_size 16MB \
+            0x0 "${DIST_DIR}/bootloader.bin" \
+            0x8000 "${DIST_DIR}/partitions.bin" \
+            0x10000 "${DIST_DIR}/firmware.bin"
+        fi
+
+        echo "== Dist dir =="
+        ls -lah "${DIST_DIR}"
+
     - name: Upload firmware artifacts
       uses: actions/upload-artifact@v4
       with:
         name: firmware-lilygo-tdisplay-s3
         path: |
-          .pio/build/lilygo_tdisplay_s3/firmware.bin
-          .pio/build/lilygo_tdisplay_s3/firmware.elf
+          dist/firmware-lilygo-tdisplay-s3/**
         retention-days: 30
-        
+
     - name: Check firmware size
       run: |
         pio run -e lilygo_tdisplay_s3 -t size
