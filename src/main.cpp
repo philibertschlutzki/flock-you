@@ -77,7 +77,7 @@ static const unsigned long ALERT_DISPLAY_MS = 8000;
 // CONFIGURATION
 // ============================================================================
 
-// Audio Configuration (nicht verwendet auf LILYGO T-Display-S3)
+// Audio Configuration (not used on LILYGO T-Display-S3)
 #define LOW_FREQ 200      // Boot sequence - low pitch
 #define HIGH_FREQ 800     // Boot sequence - high pitch & detection alert
 #define DETECT_FREQ 1000  // Detection alert - high pitch (faster beeps)
