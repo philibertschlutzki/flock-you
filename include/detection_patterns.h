@@ -1,48 +1,58 @@
 /**
  * @file detection_patterns.h
- * @brief Erkennungsmuster (WiFi/BLE) und optionaler Allowlist-Modus mit Wildcard-Support.
+ * @brief Erkennungsmuster (WiFi/BLE) inkl. Wildcards und Filter-Modus (LEGACY/ALLOWLIST).
  *
- * Diese Datei definiert alle Musterlisten, die die Erkennung auslösen.
- * Die Listen werden von `wifi_sniffer.cpp`, `ble_scanner.cpp` und `output.cpp`
- * direkt verwendet. [file:2][file:3][file:4]
+ * In dieser Datei werden alle Pattern-Listen gepflegt, die eine Erkennung auslösen.
+ * Die Arrays werden direkt von den WiFi-/BLE-Modulen verwendet.
  *
- * ## Matching-Semantik (mit Wildcard-Support)
- * - WiFi SSID: **Wildcard-Matching** (`*` = beliebige Zeichenfolge) [file:2]
- * - BLE Name: **Wildcard-Matching** (`*` = beliebige Zeichenfolge) [file:3]
- * - MAC Prefix/Pattern: Wildcard-Matching mit `*` (z.B. `aa:bb:*`, `*:dd:ee:ff`) [file:2][file:3]
- * - Raven Service UUID: Wildcard-Matching mit `*` (z.B. `00003100-*`) [file:3]
- * - Alle Vergleiche sind **case-insensitiv**
+ * -----------------------------------------------------------------------------
+ * Kurzüberblick: Was wird hier konfiguriert?
+ * -----------------------------------------------------------------------------
+ * 1) WiFi SSID Patterns        -> wifi_ssid_patterns[]
+ * 2) MAC/OUI Patterns          -> mac_prefixes[]
+ * 3) BLE Device Name Patterns  -> device_name_patterns[]
+ * 4) Raven Service UUIDs       -> raven_service_uuids[]
  *
- * ## Wildcard-Syntax
- * - `*` = beliebige Zeichenfolge (inkl. leer)
- * - Patterns ohne `*` werden als exakte Matches interpretiert (Backward-Compatible)
- * 
- * ### Beispiele für gültige Patterns:
- * - SSID: `"RAVEN-*"`, `"*-Guest"`, `"Flock*Camera"`, `"MyNetwork"`
- * - MAC: `"aa:bb:cc:*"`, `"58:8e:*"`, `"*:dd:ee:ff"`, `"aa:bb:cc:dd:ee:ff"`
- * - UUID: `"00003100-*"`, `"*-00805f9b34fb"`, `"00003100-*-00805f9b34fb"`
+ * -----------------------------------------------------------------------------
+ * Matching-Regeln (für alle Listen)
+ * -----------------------------------------------------------------------------
+ * - Wildcard: `*` matcht beliebige Zeichenfolge (auch leer)
+ * - Ohne `*` wird ein Pattern als exakter Match interpretiert
+ * - Alle Vergleiche sind case-insensitiv (Groß-/Kleinschreibung egal)
+ * - Leere Strings "" werden vom Code ignoriert (zum Deaktivieren einzelner Einträge)
  *
- * ### Ungültige Patterns (werden beim Boot gewarnt):
- * - Reine Wildcards: `"*"`, `"**"` (= match-all Prevention)
- * - Zu kurze SSID/Name: `"a*"`, `"ab*"` (min. 3 Literal-Zeichen erforderlich)
- * - Zu kurze MAC: `"*"` ohne vollständiges Byte (min. 1 Byte `aa:` erforderlich)
- * - Zu kurze UUID: `"00*"` (min. 8 zusammenhängende Hex-Zeichen erforderlich)
+ * Praxis-Tipp:
+ * - Substring-Suche: Pattern vorne und hinten mit `*` umschließen (z.B. `*flock*`).
  *
- * ## Filter-Modus
- * Standardmäßig sind die unten stehenden "Legacy"-Listen aktiv.
- * Für kontrollierte Tests (z.B. Labor/Own Devices) kann auf "ALLOWLIST" umgestellt werden.
- * Dann werden ausschließlich die Allowlist-Listen ausgewertet.
+ * -----------------------------------------------------------------------------
+ * Filter-Modus
+ * -----------------------------------------------------------------------------
+ * - FLOCKYOU_FILTER_MODE_LEGACY   : vordefinierte Heuristik-Listen (Standard-Patterns)
+ * - FLOCKYOU_FILTER_MODE_ALLOWLIST: nur die Allowlist-Arrays in diesem File
  *
- * Aktivierung (PlatformIO / build flags):
+ * Der Modus wird per Build-Flag gesetzt (PlatformIO), z.B.:
  * - `-DFLOCKYOU_FILTER_MODE=FLOCKYOU_FILTER_MODE_ALLOWLIST`
  *
- * WICHTIG: Allowlist-Listen sind per Default so initialisiert, dass sie **nichts matchen**.
- * Leere/"disabled"-Einträge werden vom Code übersprungen.
+ * Hinweis zur aktuellen Default-Konfiguration in diesem Repo:
+ * - Wenn kein Build-Flag gesetzt ist, ist der Modus hier per #define auf ALLOWLIST
+ *   voreingestellt.
+ * - Die Allowlist-Arrays sind aktuell mit `"*"` befüllt (catch-all). Für einen
+ *   strikten Allowlist-Test diese Einträge bitte durch spezifische Patterns ersetzen.
+ *
+ * -----------------------------------------------------------------------------
+ * Optionale Pattern-Validierung (Boot-Warnungen)
+ * -----------------------------------------------------------------------------
+ * Manche Builds prüfen Patterns beim Boot auf "zu allgemeine" oder "zu kurze"
+ * Wildcards (z.B. match-all), und geben Warnungen aus.
+ * In diesem File wird die Validierung standardmäßig deaktiviert, um Warnungen
+ * bei kurzen Test-Wildcards zu vermeiden.
  */
 
 #pragma once
 
-// Disable wildcard validation to suppress warnings for short wildcards
+// Pattern-Validierung (Boot-Warnungen) deaktivieren.
+// Falls ein Build/Projekt ENABLE_WILDCARD_VALIDATION definiert, wird es hier bewusst
+// wieder entfernt, um Warnungen (z.B. bei kurzen Test-Wildcards) zu unterdrücken.
 #undef ENABLE_WILDCARD_VALIDATION
 
 // ============================================================================
@@ -62,7 +72,7 @@
 /**
  * @brief Aktiver Filter-Modus.
  *
- * Default ist LEGACY.
+ * Wird FLOCKYOU_FILTER_MODE nicht per Build-Flag gesetzt, gilt der Default unten.
  */
 #ifndef FLOCKYOU_FILTER_MODE
 #define FLOCKYOU_FILTER_MODE FLOCKYOU_FILTER_MODE_ALLOWLIST
@@ -73,23 +83,10 @@
 // ============================================================================
 
 /**
- * @brief WiFi-SSID Musterliste mit Wildcard-Support.
+ * @brief WiFi-SSID Pattern-Liste.
  *
- * Verwendung:
- * - `wifi_sniffer.cpp::wifi_check_ssid_pattern()` prüft `wildcard_match_ci(pattern, ssid)` [file:2]
- * - `output.cpp::output_wifi_detection_json()` schreibt `matched_ssid_pattern` in JSON [file:4]
- *
- * Format:
- * - Einträge können Wildcards enthalten: `*` = beliebige Zeichenfolge
- * - Patterns ohne `*` werden als exakte Matches interpretiert
- * - Mindestens 3 Literal-Zeichen erforderlich (z.B. `"RAVEN-*"` OK, `"a*"` NICHT OK)
- * - Leere Strings werden ignoriert (damit Allowlist leer bleiben kann)
- * 
- * Beispiele:
- * - `"RAVEN-*"` matcht `"RAVEN-123"`, `"RAVEN-XYZ"`
- * - `"*-Guest"` matcht `"MyNet-Guest"`, `"Office-Guest"`
- * - `"Flock*Camera"` matcht `"FlockStreetCamera"`, `"Flock_Camera"`
- * - `"Flock"` matcht nur exakt `"Flock"` (kein Wildcard)
+ * Matcht gegen SSIDs aus Probe Requests/Beacons.
+ * Wildcards `*` sind erlaubt (siehe Header-Kommentar "Matching-Regeln").
  */
 #if FLOCKYOU_FILTER_MODE == FLOCKYOU_FILTER_MODE_ALLOWLIST
 static const char* wifi_ssid_patterns[] = {
@@ -113,24 +110,11 @@ static const char* wifi_ssid_patterns[] = {
 // ============================================================================
 
 /**
- * @brief MAC-Präfixe/Patterns (OUI) mit Wildcard-Support.
+ * @brief MAC Patterns (typisch: OUI/Herstellerpräfix) für WiFi und BLE.
  *
- * Verwendung:
- * - WiFi: `wifi_sniffer.cpp::wifi_check_mac_prefix()` vergleicht via `wildcard_match_mac()` [file:2]
- * - BLE:  `ble_scanner.cpp::check_mac_prefix()` vergleicht ebenfalls via Wildcard [file:3]
- * - Output: JSON enthält `matched_mac_pattern` [file:4]
- *
- * Format-Regeln:
- * - Standard: 6 Bytes als Hex mit Doppelpunkten: `"58:8e:81:12:34:56"`
- * - Wildcards erlaubt: `"aa:bb:cc:*"`, `"58:8e:*"`, `"*:dd:ee:ff"`
- * - Mindestens 1 vollständiges Byte erforderlich (z.B. `"aa:*"` OK, `"*"` NICHT OK)
- * - Groß-/Kleinschreibung egal (Vergleich ist case-insensitiv)
- * - Leere Strings werden ignoriert
- * 
- * Beispiele:
- * - `"aa:bb:cc:*"` matcht alle MACs mit Präfix `aa:bb:cc`
- * - `"58:8e:*"` matcht alle MACs von Hersteller mit OUI `58:8e`
- * - `"*:dd:ee:ff"` matcht alle MACs mit Suffix `dd:ee:ff`
+ * Format:
+ * - MAC-Notation mit Doppelpunkt: "aa:bb:cc:dd:ee:ff"
+ * - Wildcards: z.B. "aa:bb:cc:*", "58:8e:*", "*:dd:ee:ff"
  */
 #if FLOCKYOU_FILTER_MODE == FLOCKYOU_FILTER_MODE_ALLOWLIST
 static const char* mac_prefixes[] = {
@@ -152,19 +136,10 @@ static const char* mac_prefixes[] = {
 // ============================================================================
 
 /**
- * @brief BLE Gerätenamen-Musterliste mit Wildcard-Support.
+ * @brief BLE Gerätenamen-Pattern-Liste.
  *
- * Verwendung:
- * - `ble_scanner.cpp::ble_check_device_name_pattern()` prüft `wildcard_match_ci(pattern, name)` [file:3]
- * - `output.cpp::output_ble_detection_json()` schreibt `matched_name_pattern` [file:4]
- *
- * Format:
- * - Einträge können Wildcards enthalten: `*` = beliebige Zeichenfolge
- * - Patterns ohne `*` werden als exakte Matches interpretiert
- * - Mindestens 3 Literal-Zeichen erforderlich
- * - Leere Strings werden ignoriert
- * 
- * Beispiele siehe WiFi SSID Patterns (gleiche Syntax)
+ * Matcht gegen den beworbenen BLE-Namen (Advertisement).
+ * Wildcards `*` sind erlaubt (siehe Header-Kommentar "Matching-Regeln").
  */
 #if FLOCKYOU_FILTER_MODE == FLOCKYOU_FILTER_MODE_ALLOWLIST
 static const char* device_name_patterns[] = {
@@ -226,19 +201,11 @@ static const char* device_name_patterns[] = {
 #define RAVEN_OLD_LOCATION_SERVICE      "00001819-0000-1000-8000-00805f9b34fb"
 
 /**
- * @brief Liste aller bekannten Raven Service UUIDs mit Wildcard-Support.
- *
- * Verwendung:
- * - `ble_scanner.cpp::check_raven_service_uuid()` vergleicht via `wildcard_match_uuid()` [file:3]
+ * @brief Liste aller bekannten Raven Service UUIDs (inkl. Wildcard-Support).
  *
  * Format:
- * - UUID-Strings im üblichen 128-bit Format (lower/upper egal)
- * - Wildcards erlaubt: `"00003100-*"`, `"*-00805f9b34fb"`
- * - Mindestens 8 zusammenhängende Hex-Zeichen erforderlich
- * 
- * Beispiele:
- * - `"00003100-*"` matcht alle UUIDs mit Präfix `00003100`
- * - `"*-00805f9b34fb"` matcht alle UUIDs mit Suffix `00805f9b34fb`
+ * - 128-bit UUID-Strings
+ * - Wildcards: z.B. "00003100-*", "*-00805f9b34fb"
  */
 #if FLOCKYOU_FILTER_MODE == FLOCKYOU_FILTER_MODE_ALLOWLIST
 static const char* raven_service_uuids[] = {
