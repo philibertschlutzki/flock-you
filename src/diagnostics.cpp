@@ -231,6 +231,7 @@ bool diagnostics_test_backlight()
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.drawString("Backlight Test", 4, 4, 4);
     
+    #ifdef TFT_BACKLIGHT_PIN
     // Setup Backlight Pin
     pinMode(TFT_BACKLIGHT_PIN, OUTPUT);
     
@@ -240,7 +241,11 @@ bool diagnostics_test_backlight()
     delay(1000);
     
     // Test 2: On
+    #ifdef TFT_BACKLIGHT_ON
+    digitalWrite(TFT_BACKLIGHT_PIN, TFT_BACKLIGHT_ON);
+    #else
     digitalWrite(TFT_BACKLIGHT_PIN, HIGH);
+    #endif
     tft.drawString("Backlight: ON ", 4, 40, 2);
     delay(1000);
     
@@ -264,6 +269,10 @@ bool diagnostics_test_backlight()
     
     diagnostics_output_result_json("backlight", true, "On/Off + PWM OK");
     return true;
+    #else
+    diagnostics_output_result_json("backlight", false, "TFT_BACKLIGHT_PIN not defined");
+    return false;
+    #endif
 #else
     diagnostics_output_result_json("backlight", false, "No display available");
     return false;

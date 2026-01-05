@@ -794,8 +794,14 @@ void setup()
         tft.init();
         tft.setRotation(1);
         tft.fillScreen(TFT_BLACK);
+        #ifdef TFT_BACKLIGHT_PIN
         pinMode(TFT_BACKLIGHT_PIN, OUTPUT);
+        #ifdef TFT_BACKLIGHT_ON
+        digitalWrite(TFT_BACKLIGHT_PIN, TFT_BACKLIGHT_ON);
+        #else
         digitalWrite(TFT_BACKLIGHT_PIN, HIGH);
+        #endif
+        #endif
         #endif
         
         // Starte Diagnostics (kehrt nie zurück)
