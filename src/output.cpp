@@ -59,8 +59,10 @@ void output_wifi_detection_json(const char* ssid, const uint8_t* mac, int rssi, 
     bool mac_match = false;
 
     for (int i = 0; i < (int)(sizeof(wifi_ssid_patterns)/sizeof(wifi_ssid_patterns[0])); i++) {
-        if (strcasestr(ssid, wifi_ssid_patterns[i])) {
-            doc["matched_ssid_pattern"] = wifi_ssid_patterns[i];
+        const char* p = wifi_ssid_patterns[i];
+        if (!p || !*p) continue;
+        if (strcasestr(ssid, p)) {
+            doc["matched_ssid_pattern"] = p;
             doc["ssid_match_confidence"] = "HIGH";
             ssid_match = true;
             break;
@@ -68,8 +70,10 @@ void output_wifi_detection_json(const char* ssid, const uint8_t* mac, int rssi, 
     }
 
     for (int i = 0; i < (int)(sizeof(mac_prefixes)/sizeof(mac_prefixes[0])); i++) {
-        if (strncasecmp(mac_prefix, mac_prefixes[i], 8) == 0) {
-            doc["matched_mac_pattern"] = mac_prefixes[i];
+        const char* p = mac_prefixes[i];
+        if (!p || !*p) continue;
+        if (strncasecmp(mac_prefix, p, 8) == 0) {
+            doc["matched_mac_pattern"] = p;
             doc["mac_match_confidence"] = "HIGH";
             mac_match = true;
             break;
@@ -131,8 +135,11 @@ void output_ble_detection_json(const char* mac, const char* name, int rssi, cons
     bool mac_match = false;
 
     for (int i = 0; i < (int)(sizeof(mac_prefixes)/sizeof(mac_prefixes[0])); i++) {
-        if (strncasecmp(mac, mac_prefixes[i], strlen(mac_prefixes[i])) == 0) {
-            doc["matched_mac_pattern"] = mac_prefixes[i];
+        const char* p = mac_prefixes[i];
+        if (!p || !*p) continue;
+        // Achtung: in BLE wird mit strlen(prefix) verglichen -> leere Strings müssen übersprungen werden.
+        if (strncasecmp(mac, p, strlen(p)) == 0) {
+            doc["matched_mac_pattern"] = p;
             doc["mac_match_confidence"] = "HIGH";
             mac_match = true;
             break;
@@ -141,8 +148,10 @@ void output_ble_detection_json(const char* mac, const char* name, int rssi, cons
 
     if (name && strlen(name) > 0) {
         for (int i = 0; i < (int)(sizeof(device_name_patterns)/sizeof(device_name_patterns[0])); i++) {
-            if (strcasestr(name, device_name_patterns[i])) {
-                doc["matched_name_pattern"] = device_name_patterns[i];
+            const char* p = device_name_patterns[i];
+            if (!p || !*p) continue;
+            if (strcasestr(name, p)) {
+                doc["matched_name_pattern"] = p;
                 doc["name_match_confidence"] = "HIGH";
                 name_match = true;
                 break;

@@ -38,7 +38,9 @@ static bool check_raven_service_uuid(NimBLEAdvertisedDevice* device, char* detec
         std::string uuidStr = serviceUUID.toString();
 
         for (int j = 0; j < (int)(sizeof(raven_service_uuids)/sizeof(raven_service_uuids[0])); j++) {
-            if (strcasecmp(uuidStr.c_str(), raven_service_uuids[j]) == 0) {
+            const char* p = raven_service_uuids[j];
+            if (!p || !*p) continue; // Allowlist kann leer sein
+            if (strcasecmp(uuidStr.c_str(), p) == 0) {
                 if (detected_service_out != nullptr) {
                     strncpy(detected_service_out, uuidStr.c_str(), 40);
                 }
@@ -114,7 +116,9 @@ static bool check_mac_prefix(const uint8_t* mac)
     snprintf(mac_str, sizeof(mac_str), "%02x:%02x:%02x", mac[0], mac[1], mac[2]);
 
     for (int i = 0; i < (int)(sizeof(mac_prefixes)/sizeof(mac_prefixes[0])); i++) {
-        if (strncasecmp(mac_str, mac_prefixes[i], 8) == 0) {
+        const char* p = mac_prefixes[i];
+        if (!p || !*p) continue; // Allowlist kann leer sein
+        if (strncasecmp(mac_str, p, 8) == 0) {
             return true;
         }
     }
@@ -178,7 +182,9 @@ class AdvertisedDeviceCallbacks: public NimBLEAdvertisedDeviceCallbacks {
                     NimBLEUUID serviceUUID = advertisedDevice->getServiceUUID(i);
                     std::string uuidStr = serviceUUID.toString();
                     for (int j = 0; j < (int)(sizeof(raven_service_uuids)/sizeof(raven_service_uuids[0])); j++) {
-                        if (strcasecmp(uuidStr.c_str(), raven_service_uuids[j]) == 0) {
+                        const char* p = raven_service_uuids[j];
+                        if (!p || !*p) continue;
+                        if (strcasecmp(uuidStr.c_str(), p) == 0) {
                             raven_service_count++;
                             break;
                         }
@@ -236,7 +242,9 @@ bool ble_check_device_name_pattern(const char* name)
     if (!name) return false;
 
     for (int i = 0; i < (int)(sizeof(device_name_patterns)/sizeof(device_name_patterns[0])); i++) {
-        if (strcasestr(name, device_name_patterns[i])) {
+        const char* p = device_name_patterns[i];
+        if (!p || !*p) continue; // Allowlist kann leer sein
+        if (strcasestr(name, p)) {
             return true;
         }
     }

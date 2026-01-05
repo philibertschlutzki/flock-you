@@ -113,7 +113,9 @@ bool wifi_check_ssid_pattern(const char* ssid)
     if (!ssid) return false;
 
     for (int i = 0; i < (int)(sizeof(wifi_ssid_patterns)/sizeof(wifi_ssid_patterns[0])); i++) {
-        if (strcasestr(ssid, wifi_ssid_patterns[i])) {
+        const char* p = wifi_ssid_patterns[i];
+        if (!p || !*p) continue; // Allowlist kann leer sein
+        if (strcasestr(ssid, p)) {
             return true;
         }
     }
@@ -126,7 +128,9 @@ bool wifi_check_mac_prefix(const uint8_t* mac)
     snprintf(mac_str, sizeof(mac_str), "%02x:%02x:%02x", mac[0], mac[1], mac[2]);
 
     for (int i = 0; i < (int)(sizeof(mac_prefixes)/sizeof(mac_prefixes[0])); i++) {
-        if (strncasecmp(mac_str, mac_prefixes[i], 8) == 0) {
+        const char* p = mac_prefixes[i];
+        if (!p || !*p) continue; // Allowlist kann leer sein
+        if (strncasecmp(mac_str, p, 8) == 0) {
             return true;
         }
     }
