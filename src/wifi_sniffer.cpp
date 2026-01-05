@@ -7,17 +7,12 @@
 
 #include "wifi_sniffer.h"
 #include "config.h"
-#include "detection_patterns.h"
+#include "blacklist.h"
 #include "output.h"
 #include "state.h"
-#include "wildcard_match.h"
-#include "pattern_validator.h"
 #include <WiFi.h>
 #include <string.h>
 #include <ctype.h>
-
-// Maximum Anzahl von Patterns für Warn-Tracking (großzügig bemessen)
-#define MAX_PATTERN_WARNING_TRACKING 100
 
 // Globale Variablen für WiFi Sniffer
 static uint8_t current_channel = 1;
@@ -27,7 +22,8 @@ static unsigned long last_channel_hop = 0;
  * @brief WiFi Promiscuous Mode Paket-Handler
  * 
  * Wird für jedes empfangene WiFi-Paket aufgerufen.
- * Extrahiert Informationen und prüft auf Flock Safety Geräte.
+ * Extrahiert Informationen und prüft gegen Blacklist.
+ * Nur unbekannte Geräte werden gemeldet.
  * 
  * @param buf Rohe Paketdaten
  * @param type Pakettyp
@@ -66,28 +62,36 @@ static void wifi_sniffer_packet_handler(void* buf, wifi_promiscuous_pkt_type_t t
     if (ssid_tag[0] != 0x00) return;
 
     const uint8_t ssid_len = ssid_tag[1];
-    if (ssid_len == 0 || ssid_len > 32 || len < ssid_offset + 2 + ssid_len) return;
-
-    char ssid[33];
-    memcpy(ssid, ssid_tag + 2, ssid_len);
-    ssid[ssid_len] = '\0';
+    
+    // Handle hidden/empty SSIDs
+    char ssid[33] = {0};
+    const char* ssid_ptr = nullptr;
+    
+    if (ssid_len > 0 && ssid_len <= 32 && len >= ssid_offset + 2 + ssid_len) {
+        memcpy(ssid, ssid_tag + 2, ssid_len);
+        ssid[ssid_len] = '\0';
+        ssid_ptr = ssid;
+    }
 
     const int rssi = ppkt->rx_ctrl.rssi;
-    const bool ssid_match = wifi_check_ssid_pattern(ssid);
-    const bool mac_match = wifi_check_mac_prefix(src_mac);
-
-    if (ssid_match || mac_match) {
-        const char* detection_type = (frame_subtype == 4) 
-            ? (ssid_match ? "probe_request" : "probe_request_mac")
-            : (ssid_match ? "beacon" : "beacon_mac");
-
-        if (!triggered) {
-            output_trigger_detection();
-            triggered = true;
-        }
-
-        output_wifi_detection_json(ssid, src_mac, rssi, detection_type);
+    
+    // Check blacklist - filter out known devices
+    if (is_known_wifi(ssid_ptr, src_mac, bssid)) {
+        // Device is known - skip (no output)
+        return;
     }
+    
+    // Device is unknown - report it
+    const char* detection_type = (frame_subtype == 4) 
+        ? "probe_request_unknown"
+        : "beacon_unknown";
+
+    if (!triggered) {
+        output_trigger_detection();
+        triggered = true;
+    }
+
+    output_wifi_detection_json(ssid_ptr ? ssid_ptr : "", src_mac, rssi, detection_type);
 }
 
 void wifi_sniffer_init()
@@ -102,7 +106,7 @@ void wifi_sniffer_init()
 
     Serial.println("[WiFi] Sniffer INITIALIZED - Monitor Mode Active");
     Serial.printf("WiFi promiscuous mode enabled on channel %d\n", current_channel);
-    Serial.println("Monitoring probe requests and beacons...");
+    Serial.println("Monitoring probe requests and beacons (unknown-only mode)...");
 }
 
 void wifi_sniffer_hop_channel()
@@ -122,75 +126,4 @@ void wifi_sniffer_hop_channel()
 uint8_t wifi_sniffer_get_current_channel()
 {
     return current_channel;
-}
-
-bool wifi_check_ssid_pattern(const char* ssid)
-{
-    if (!ssid) return false;
-
-    const int pattern_count = (int)(sizeof(wifi_ssid_patterns)/sizeof(wifi_ssid_patterns[0]));
-    
-    for (int i = 0; i < pattern_count; i++) {
-        const char* p = wifi_ssid_patterns[i];
-        if (!p || !*p) continue; // Allowlist kann leer sein
-        
-        // Validiere Pattern (nur einmalig warnen bei ungültigen Patterns)
-#ifdef ENABLE_WILDCARD_VALIDATION
-        if (!validate_pattern(p, PATTERN_TYPE_SSID)) {
-            static bool* warned = nullptr;
-            if (warned == nullptr) {
-                // Initialisiere Warn-Array beim ersten Aufruf
-                static bool warn_array[MAX_PATTERN_WARNING_TRACKING] = {false};
-                warned = warn_array;
-            }
-            if (i < MAX_PATTERN_WARNING_TRACKING && !warned[i]) {
-                Serial.printf("[WILDCARD] Invalid SSID pattern #%d: '%s' - %s\n", 
-                    i, p, get_validation_error(p, PATTERN_TYPE_SSID));
-                warned[i] = true;
-            }
-            continue;
-        }
-#endif
-        
-        if (wildcard_match_ci(p, ssid)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool wifi_check_mac_prefix(const uint8_t* mac)
-{
-    char mac_str[18];
-    snprintf(mac_str, sizeof(mac_str), "%02x:%02x:%02x:%02x:%02x:%02x", 
-        mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-
-    const int pattern_count = (int)(sizeof(mac_prefixes)/sizeof(mac_prefixes[0]));
-    
-    for (int i = 0; i < pattern_count; i++) {
-        const char* p = mac_prefixes[i];
-        if (!p || !*p) continue; // Allowlist kann leer sein
-        
-        // Validiere Pattern (nur einmalig warnen bei ungültigen Patterns)
-#ifdef ENABLE_WILDCARD_VALIDATION
-        if (!validate_pattern(p, PATTERN_TYPE_MAC)) {
-            static bool* warned = nullptr;
-            if (warned == nullptr) {
-                static bool warn_array[MAX_PATTERN_WARNING_TRACKING] = {false};
-                warned = warn_array;
-            }
-            if (i < MAX_PATTERN_WARNING_TRACKING && !warned[i]) {
-                Serial.printf("[WILDCARD] Invalid MAC pattern #%d: '%s' - %s\n", 
-                    i, p, get_validation_error(p, PATTERN_TYPE_MAC));
-                warned[i] = true;
-            }
-            continue;
-        }
-#endif
-        
-        if (wildcard_match_mac(p, mac_str)) {
-            return true;
-        }
-    }
-    return false;
 }
