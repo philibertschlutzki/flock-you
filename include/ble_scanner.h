@@ -1,10 +1,10 @@
 /**
  * @file ble_scanner.h
- * @brief BLE Scanner für Flock Safety und Raven Detection
+ * @brief BLE Scanner für Unknown Device Detection
  * 
  * Dieses Modul implementiert BLE-Scanning mit Active Scan,
- * Erkennung von Flock Safety Geräten anhand von Device-Namen,
- * MAC-Präfixen und Raven Service UUIDs.
+ * Erkennung von unbekannten Geräten.
+ * Bekannte Geräte (Blacklist) werden gefiltert.
  */
 
 #pragma once
@@ -32,10 +32,3 @@ void ble_scanner_tick();
  * @return true wenn Scan aktiv, sonst false
  */
 bool ble_scanner_is_scanning();
-
-/**
- * @brief Prüft ob BLE Device-Name einem Flock Safety Muster entspricht
- * @param name Der zu prüfende Device-Name
- * @return true wenn Name-Muster übereinstimmt, sonst false
- */
-bool ble_check_device_name_pattern(const char* name);
