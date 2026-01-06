@@ -1,0 +1,75 @@
+name: Update Generated Blacklist
+
+on:
+  # Allow manual trigger
+  workflow_dispatch:
+  
+  # Run daily at 02:00 UTC
+  schedule:
+    - cron: '0 2 * * *'
+
+# Ensure only one update job runs at a time
+concurrency:
+  group: update-generated-blacklist
+  cancel-in-progress: true
+
+# Required permissions for committing and pushing changes
+permissions:
+  contents: write
+
+jobs:
+  update-blacklist:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies (if requirements.txt exists)
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          elif [ -f tools/requirements.txt ]; then
+            pip install -r tools/requirements.txt
+          else
+            echo "No requirements.txt found, skipping dependency installation"
+          fi
+      
+      - name: Determine latest CSV source file
+        run: |
+          LATEST_CSV=$(ls -1 datasets/flockyou_cumulative_*.csv 2>/dev/null | sort | tail -n1)
+          if [ -z "$LATEST_CSV" ]; then
+            echo "No flockyou_cumulative_*.csv file found"
+            LATEST_CSV="(none)"
+          fi
+          echo "LATEST_CSV=$LATEST_CSV" >> $GITHUB_ENV
+          echo "Latest CSV source file: $LATEST_CSV"
+      
+      - name: Generate blacklist files
+        run: |
+          echo "Running blacklist generator..."
+          python3 tools/generate_blacklist_from_csv.py
+      
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git --no-pager diff --exit-code include/known_blacklist_generated.h src/known_blacklist_generated.cpp || echo "changes_detected=true" >> $GITHUB_OUTPUT
+      
+      - name: Commit and push changes
+        if: steps.check_changes.outputs.changes_detected == 'true'
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add include/known_blacklist_generated.h src/known_blacklist_generated.cpp
+          git commit -m "chore: update generated blacklist [skip ci]"
+          git push
+      
+      - name: No changes detected
+        if: steps.check_changes.outputs.changes_detected != 'true'
+        run: |
+          echo "No changes detected in generated blacklist files. Skipping commit."
