@@ -8,6 +8,7 @@
 # Python virtual environments
 api/venv/
 api/__pycache__/
+tools/__pycache__/
 
 # Build artifacts
 *.o
