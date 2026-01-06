@@ -80,16 +80,30 @@ def process_csv_files(csv_dir: str) -> Tuple[Set[str], Set[Tuple[int, ...]], Set
                     # Determine protocol (wifi vs bluetooth_le)
                     protocol = None
                     
-                    # Check if it's BLE/BT (has 'type' column with 'BLE' or 'BT' value)
-                    if 'type' in row and row['type'] in BLE_TYPES:
+                    # New format: check 'protocol' column directly
+                    if 'protocol' in row:
+                        protocol_value = row['protocol'].strip().lower()
+                        if protocol_value == 'wifi':
+                            protocol = 'wifi'
+                        elif protocol_value == 'bluetooth_le':
+                            protocol = 'bluetooth_le'
+                    # Old format: check 'type' column with 'BLE' or 'BT' value
+                    elif 'type' in row and row['type'] in BLE_TYPES:
                         protocol = 'bluetooth_le'
-                    # Check if it has WiFi-specific columns
+                    # Old format: check if it has WiFi-specific columns
                     elif 'ssid' in row and 'netid' in row:
                         # If has ssid but type is BLE/BT, it's BLE with ssid field
                         if 'type' in row and row['type'] in BLE_TYPES:
                             protocol = 'bluetooth_le'
                         else:
                             protocol = 'wifi'
+                    
+                    # Determine MAC address column (new format uses 'mac_address', old uses 'netid')
+                    mac_str = ''
+                    if 'mac_address' in row:
+                        mac_str = row.get('mac_address', '').strip()
+                    else:
+                        mac_str = row.get('netid', '').strip()
                     
                     # Process WiFi
                     if protocol == 'wifi':
@@ -98,8 +112,7 @@ def process_csv_files(csv_dir: str) -> Tuple[Set[str], Set[Tuple[int, ...]], Set
                         if ssid:
                             wifi_ssids.add(ssid)
                         
-                        # Extract MAC from 'netid' column
-                        mac_str = row.get('netid', '').strip()
+                        # Extract and validate MAC address
                         valid, mac_bytes = validate_mac(mac_str)
                         if valid:
                             mac_tuple = tuple(mac_bytes)
@@ -109,8 +122,7 @@ def process_csv_files(csv_dir: str) -> Tuple[Set[str], Set[Tuple[int, ...]], Set
                     
                     # Process BLE
                     elif protocol == 'bluetooth_le':
-                        # Extract MAC from 'netid' column
-                        mac_str = row.get('netid', '').strip()
+                        # Extract and validate MAC address
                         valid, mac_bytes = validate_mac(mac_str)
                         if valid:
                             mac_tuple = tuple(mac_bytes)
