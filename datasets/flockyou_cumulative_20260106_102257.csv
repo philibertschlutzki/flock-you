@@ -1,0 +1,109 @@
+timestamp,detection_time,server_timestamp,protocol,detection_method,ssid,device_name,mac_address,manufacturer,alias,rssi,last_rssi,signal_strength,channel,last_channel,detection_count,latitude,longitude,altitude,gps_timestamp,satellites,fix_quality,gps_time_diff,gps_match_quality,timestamp_source
+2026-01-06T10:14:48.658640,2026-01-06 10:14:48,2026-01-06T10:14:48.658640,bluetooth_le,unknown,,,50:bc:a5:57:1a:e3,Unknown Manufacturer,,-93,-89,WEAK,,,43,,,,,,,,,system
+2026-01-06T10:14:50.080858,2026-01-06 10:14:50,2026-01-06T10:14:50.080858,wifi,beacon_unknown,ZKB Gast-WLAN,,cc:88:c7:c3:37:01,Hewlett Packard Enterprise,,-74,-75,WEAK,1,1,181,,,,,,,,,system
+2026-01-06T10:14:50.193367,2026-01-06 10:14:50,2026-01-06T10:14:50.193367,wifi,beacon_unknown,MA-WLAN,,cc:88:c7:c3:37:02,Hewlett Packard Enterprise,,-74,-75,WEAK,1,1,168,,,,,,,,,system
+2026-01-06T10:14:50.308293,2026-01-06 10:14:50,2026-01-06T10:14:50.308293,wifi,beacon_unknown,Tech-WLAN,,cc:88:c7:c3:37:03,Hewlett Packard Enterprise,,-74,-75,WEAK,1,1,155,,,,,,,,,system
+2026-01-06T10:14:51.666728,2026-01-06 10:14:51,2026-01-06T10:14:51.666728,wifi,probe_request_unknown,,,e4:60:17:0e:90:7a,Intel Corporate,,-87,-87,WEAK,3,10,2,,,,,,,,,system
+2026-01-06T10:14:51.781177,2026-01-06 10:14:51,2026-01-06T10:14:51.781177,wifi,probe_request_unknown,,,90:65:84:ef:d5:5d,Intel Corporate,,-91,-85,WEAK,3,10,5,,,,,,,,,system
+2026-01-06T10:14:53.888608,2026-01-06 10:14:53,2026-01-06T10:14:53.888608,bluetooth_le,unknown,,,55:1e:99:7a:28:88,Unknown Manufacturer,,-65,-71,MEDIUM,,,55,,,,,,,,,system
+2026-01-06T10:14:54.002759,2026-01-06 10:14:54,2026-01-06T10:14:54.002759,bluetooth_le,unknown,,,7d:aa:14:e2:e1:38,Unknown Manufacturer,,-96,-96,WEAK,,,7,,,,,,,,,system
+2026-01-06T10:14:54.118267,2026-01-06 10:14:54,2026-01-06T10:14:54.118267,bluetooth_le,unknown,,,e2:a7:de:b5:7d:fb,Unknown Manufacturer,,-62,-62,MEDIUM,,,2,,,,,,,,,system
+2026-01-06T10:14:54.234573,2026-01-06 10:14:54,2026-01-06T10:14:54.234573,bluetooth_le,unknown,,,76:ae:cb:ac:78:63,Unknown Manufacturer,,-67,-66,MEDIUM,,,54,,,,,,,,,system
+2026-01-06T10:14:54.351024,2026-01-06 10:14:54,2026-01-06T10:14:54.351024,bluetooth_le,unknown,,Poly VSurround 80,6f:32:b6:fb:16:a4,Unknown Manufacturer,,-70,-72,WEAK,,,6,,,,,,,,,system
+2026-01-06T10:14:54.467364,2026-01-06 10:14:54,2026-01-06T10:14:54.467364,bluetooth_le,unknown,,,24:0d:d0:8d:2e:a0,Unknown Manufacturer,,-91,-88,WEAK,,,45,,,,,,,,,system
+2026-01-06T10:14:54.693847,2026-01-06 10:14:54,2026-01-06T10:14:54.693847,bluetooth_le,unknown,,,ce:ef:72:f4:c2:a5,Unknown Manufacturer,,-67,-65,MEDIUM,,,2,,,,,,,,,system
+2026-01-06T10:14:54.808218,2026-01-06 10:14:54,2026-01-06T10:14:54.808218,bluetooth_le,unknown,,,4f:36:6d:1d:bb:da,Unknown Manufacturer,,-91,-87,WEAK,,,40,,,,,,,,,system
+2026-01-06T10:14:54.915009,2026-01-06 10:14:54,2026-01-06T10:14:54.915009,bluetooth_le,unknown,,,77:fc:c0:f8:0b:93,Unknown Manufacturer,,-89,-90,WEAK,,,45,,,,,,,,,system
+2026-01-06T10:14:55.028583,2026-01-06 10:14:55,2026-01-06T10:14:55.028583,bluetooth_le,unknown,,,ed:a3:4e:f9:27:ed,Unknown Manufacturer,,-85,-84,WEAK,,,24,,,,,,,,,system
+2026-01-06T10:14:55.143398,2026-01-06 10:14:55,2026-01-06T10:14:55.143398,bluetooth_le,unknown,,,c1:29:96:0f:eb:7e,Unknown Manufacturer,,-89,-90,WEAK,,,7,,,,,,,,,system
+2026-01-06T10:14:55.258248,2026-01-06 10:14:55,2026-01-06T10:14:55.258248,bluetooth_le,unknown,,,7e:ee:1a:3c:08:8e,Unknown Manufacturer,,-88,-87,WEAK,,,49,,,,,,,,,system
+2026-01-06T10:14:56.285465,2026-01-06 10:14:56,2026-01-06T10:14:56.285465,wifi,beacon_unknown,Tech-WLAN,,cc:88:c7:c3:2a:63,Hewlett Packard Enterprise,,-92,-93,WEAK,11,11,5,,,,,,,,,system
+2026-01-06T10:14:56.399359,2026-01-06 10:14:56,2026-01-06T10:14:56.399359,wifi,beacon_unknown,ZKB Gast-WLAN,,cc:88:c7:c3:2a:61,Hewlett Packard Enterprise,,-94,-94,WEAK,11,11,5,,,,,,,,,system
+2026-01-06T10:14:56.511944,2026-01-06 10:14:56,2026-01-06T10:14:56.511944,wifi,beacon_unknown,MA-WLAN,,cc:88:c7:c3:2a:62,Hewlett Packard Enterprise,,-91,-92,WEAK,11,11,7,,,,,,,,,system
+2026-01-06T10:15:00.386425,2026-01-06 10:15:00,2026-01-06T10:15:00.386425,bluetooth_le,unknown,,,e3:ab:2e:12:90:e3,Unknown Manufacturer,,-69,-69,MEDIUM,,,24,,,,,,,,,system
+2026-01-06T10:15:00.503322,2026-01-06 10:15:00,2026-01-06T10:15:00.503322,bluetooth_le,unknown,,,c6:e2:d8:a6:60:8a,Unknown Manufacturer,,-90,,WEAK,,,1,,,,,,,,,system
+2026-01-06T10:15:01.068150,2026-01-06 10:15:01,2026-01-06T10:15:01.068150,bluetooth_le,unknown,,,cd:e9:85:84:9f:95,Unknown Manufacturer,,-65,-68,MEDIUM,,,23,,,,,,,,,system
+2026-01-06T10:15:01.643422,2026-01-06 10:15:01,2026-01-06T10:15:01.643422,bluetooth_le,unknown,,,28:de:65:1b:42:65,Hewlett Packard Enterprise,,-78,-79,WEAK,,,12,,,,,,,,,system
+2026-01-06T10:15:01.760023,2026-01-06 10:15:01,2026-01-06T10:15:01.760023,bluetooth_le,unknown,,,cc:17:6a:5a:3c:62,Unknown Manufacturer,,-68,-83,MEDIUM,,,23,,,,,,,,,system
+2026-01-06T10:15:05.960001,2026-01-06 10:15:05,2026-01-06T10:15:05.960001,wifi,beacon_unknown,Tech-WLAN,,,Unknown,,-73,,WEAK,,,1,,,,,,,,,system
+2026-01-06T10:15:07.076746,2026-01-06 10:15:07,2026-01-06T10:15:07.076746,wifi,beacon_unknown,Tech-WLAN,,,Unknown,,,,,,,1,,,,,,,,,system
+2026-01-06T10:15:12.840620,2026-01-06 10:15:12,2026-01-06T10:15:12.840620,,unknown,,,e4:e5:30:9b:7c:70,Unknown Manufacturer,,-87,-86,WEAK,,,6,,,,,,,,,system
+2026-01-06T10:15:12.955759,2026-01-06 10:15:12,2026-01-06T10:15:12.955759,bluetooth_le,unknown,,,4f:36:6d:1WEAK,Unknown Manufacturer,,,,,,,1,,,,,,,,,system
+2026-01-06T10:15:13.295496,2026-01-06 10:15:13,2026-01-06T10:15:13.295496,bluetooth_le,unknown,,,7f:37:f0:7f:e4:c3,Unknown Manufacturer,,-91,-85,WEAK,,,49,,,,,,,,,system
+2026-01-06T10:15:15.307188,2026-01-06 10:15:15,2026-01-06T10:15:15.307188,wifi,beacon_unknown,Tech-WLAN,,,Unknown,,-73,,,,,1,,,,,,,,,system
+2026-01-06T10:15:16.924367,2026-01-06 10:15:16,2026-01-06T10:15:16.924367,wifi,probe_request_unknown,,,da:f2:15:41:e2:6b,Unknown Manufacturer,,-95,,WEAK,6,,1,,,,,,,,,system
+2026-01-06T10:15:19.497916,2026-01-06 10:15:19,2026-01-06T10:15:19.497916,bluetooth_le,unknown,,,f9:32:28:7c:67:bd,Unknown Manufacturer,,-62,-71,MEDIUM,,,21,,,,,,,,,system
+2026-01-06T10:15:21.935667,2026-01-06 10:15:21,2026-01-06T10:15:21.935667,wifi,beacon_unknown,Tech-WLAN,,,Unknown,,-72,,,,,1,,,,,,,,,system
+2026-01-06T10:15:22.051481,2026-01-06 10:15:22,2026-01-06T10:15:22.051481,wifi,beacon_unknown,ZKB Gast-WLAN,,ccc7,Unknown Manufacturer,,-73,,WEAK,1,,1,,,,,,,,,system
+2026-01-06T10:15:22.615120,2026-01-06 10:15:22,2026-01-06T10:15:22.615120,wifi,beacon_unknown,Tech-WLAN,,,Unknown,,-73,,,,,1,,,,,,,,,system
+2026-01-06T10:15:24.626543,2026-01-06 10:15:24,2026-01-06T10:15:24.626543,wifi,probe_request_unknown,Mobile-WLAN,,90:09:df:56:e8:57,Intel Corporate,,-81,,WEAK,6,,1,,,,,,,,,system
+2026-01-06T10:15:31.049445,2026-01-06 10:15:31,2026-01-06T10:15:31.049445,bluetooth_le,unknown,,,fa:3e:ae:41:05:06,Unknown Manufacturer,,-87,-87,WEAK,,,19,,,,,,,,,system
+2026-01-06T10:15:31.162525,2026-01-06 10:15:31,2026-01-06T10:15:31.162525,bluetooth_le,unknown,,,f3:d2:66:5d:61:e1,Unknown Manufacturer,,-89,-88,WEAK,,,11,,,,,,,,,system
+2026-01-06T10:15:31.398013,2026-01-06 10:15:31,2026-01-06T10:15:31.398013,bluetooth_le,unknown,,,76:df:ae:e3:e2:03,Unknown Manufacturer,,-93,-88,WEAK,,,12,,,,,,,,,system
+2026-01-06T10:15:31.515493,2026-01-06 10:15:31,2026-01-06T10:15:31.515493,bluetooth_le,unknown,,,ce:46:39:af:97:80,Unknown Manufacturer,,-90,-92,WEAK,,,14,,,,,,,,,system
+2026-01-06T10:15:33.407987,2026-01-06 10:15:33,2026-01-06T10:15:33.407987,wifi,probe_request_unknown,,,96:c9:2e:13:b3:85,Unknown Manufacturer,,-87,,WEAK,7,,1,,,,,,,,,system
+2026-01-06T10:15:37.306714,2026-01-06 10:15:37,2026-01-06T10:15:37.306714,bluetooth_le,unknown,,,dd:9b:53:17:ef:3f,Unknown Manufacturer,,-92,-95,WEAK,,,17,,,,,,,,,system
+2026-01-06T10:15:43.352906,2026-01-06 10:15:43,2026-01-06T10:15:43.352906,bluetooth_le,unknown,,,6e:41:d9:85:09:07,Unknown Manufacturer,,-92,-96,WEAK,,,4,,,,,,,,,system
+2026-01-06T10:15:43.569614,2026-01-06 10:15:43,2026-01-06T10:15:43.569614,bluetooth_le,unknown,,,74:bd:5d:46:51:da,Unknown Manufacturer,,-91,-90,WEAK,,,6,,,,,,,,,system
+2026-01-06T10:15:44.849281,2026-01-06 10:15:44,2026-01-06T10:15:44.849281,wifi,probe_request_unknown,,,fe:c7:62:a4:69:e2,Unknown Manufacturer,,-81,-81,WEAK,12,12,2,,,,,,,,,system
+2026-01-06T10:15:47.395736,2026-01-06 10:15:47,2026-01-06T10:15:47.395736,wifi,probe_request_unknown,MA-WLAN,,42:1c:73:64:7d:07,Unknown Manufacturer,,-87,-83,WEAK,4,2,5,,,,,,,,,system
+2026-01-06T10:15:48.473438,2026-01-06 10:15:48,2026-01-06T10:15:48.473438,wifi,probe_request_unknown,Mobile-WLAN,,90:65:84:f3:37:e3,Intel Corporate,,-89,-89,WEAK,6,8,3,,,,,,,,,system
+2026-01-06T10:15:56.003765,2026-01-06 10:15:56,2026-01-06T10:15:56.003765,bluetooth_le,unknown,,Poly VSurround 80,4a:56:5e:79:df:fc,Unknown Manufacturer,,-71,-70,WEAK,,,46,,,,,,,,,system
+2026-01-06T10:15:56.565228,2026-01-06 10:15:56,2026-01-06T10:15:56.565228,bluetooth_le,unknown,,,c4:4d:40:49:62:0b,Unknown Manufacturer,,-95,,WEAK,,,1,,,,,,,,,system
+2026-01-06T10:16:02.651333,2026-01-06 10:16:02,2026-01-06T10:16:02.651333,bluetooth_le,unknown,,,f7:cc:c9:21:7a:ff,Unknown Manufacturer,,-93,-96,WEAK,,,3,,,,,,,,,system
+2026-01-06T10:16:07.272173,2026-01-06 10:16:07,2026-01-06T10:16:07.272173,wifi,probe_request_unknown,MA-WLAN,,5e:89:22:2c:ee:e9,Unknown Manufacturer,,-86,-83,WEAK,10,1,3,,,,,,,,,system
+2026-01-06T10:16:08.470362,2026-01-06 10:16:08,2026-01-06T10:16:08.470362,bluetooth_le,unknown,,,,Unknown,,-85,,WEAK,,,1,,,,,,,,,system
+2026-01-06T10:16:08.577403,2026-01-06 10:16:08,2026-01-06T10:16:08.577403,bluetooth_le,unknown,,,fb:76:16:38:65:8e,Unknown Manufacturer,,-91,-90,WEAK,,,15,,,,,,,,,system
+2026-01-06T10:16:08.808479,2026-01-06 10:16:08,2026-01-06T10:16:08.808479,bluetooth_le,unknown,,,d0:a5:4e:77:10:1f,Unknown Manufacturer,,-93,-89,WEAK,,,11,,,,,,,,,system
+2026-01-06T10:16:13.546827,2026-01-06 10:16:13,2026-01-06T10:16:13.546827,bluetooth_le,unknown,,,07:f3:32:11:f0:ab,Unknown Manufacturer,,-92,-87,WEAK,,,2,,,,,,,,,system
+2026-01-06T10:16:13.962750,2026-01-06 10:16:13,2026-01-06T10:16:13.962750,bluetooth_le,unknown,,,e2:f2:cc:ff:85:a8,Unknown Manufacturer,,-90,-90,WEAK,,,16,,,,,,,,,system
+2026-01-06T10:16:17.375186,2026-01-06 10:16:17,2026-01-06T10:16:17.375186,wifi,beacon_unknown,ZKB Gast-WLAN,,cc1,Unknown Manufacturer,,-74,,WEAK,1,,1,,,,,,,,,system
+2026-01-06T10:16:24.279709,2026-01-06 10:16:24,2026-01-06T10:16:24.279709,wifi,probe_request_unknown,,,a2:a4:4e:04:17:8e,Unknown Manufacturer,,-81,,WEAK,12,,1,,,,,,,,,system
+2026-01-06T10:16:32.009912,2026-01-06 10:16:32,2026-01-06T10:16:32.009912,bluetooth_le,unknown,,,f3:6c:48:ef:33:48,Unknown Manufacturer,,-95,,WEAK,,,1,,,,,,,,,system
+2026-01-06T10:16:35.675363,2026-01-06 10:16:35,2026-01-06T10:16:35.675363,wifi,probe_request_unknown,,,d2:51:4e:c2:81:0e,Unknown Manufacturer,,-87,-88,WEAK,4,5,2,,,,,,,,,system
+2026-01-06T10:16:35.993380,2026-01-06 10:16:35,2026-01-06T10:16:35.993380,wifi,probe_request_unknown,,,9a:8b:a1:1b:97:e5,Unknown Manufacturer,,-88,,WEAK,5,,1,,,,,,,,,system
+2026-01-06T10:16:36.105891,2026-01-06 10:16:36,2026-01-06T10:16:36.105891,wifi,probe_request_unknown,,,06:d0:29:14:86:d1,Unknown Manufacturer,,-86,-85,WEAK,5,5,2,,,,,,,,,system
+2026-01-06T10:16:39.849393,2026-01-06 10:16:39,2026-01-06T10:16:39.849393,wifi,probe_request_unknown,MA-WLAN,,5a:29:04:4e:67:3b,Unknown Manufacturer,,-92,-84,WEAK,11,11,3,,,,,,,,,system
+2026-01-06T10:16:45.745082,2026-01-06 10:16:45,2026-01-06T10:16:45.745082,wifi,probe_request_unknown,Mobile-WLAN,,,Unknown,,-83,,WEAK,7,,1,,,,,,,,,system
+2026-01-06T10:16:50.172165,2026-01-06 10:16:50,2026-01-06T10:16:50.172165,wifi,probe_request_unknown,,,9e:0d:d3:33:93:dc,Unknown Manufacturer,,-92,,WEAK,1,,1,,,,,,,,,system
+2026-01-06T10:16:50.922234,2026-01-06 10:16:50,2026-01-06T10:16:50.922234,bluetooth_le,unknown,,,d5:99:9c:d6:36:27,Unknown Manufacturer,,-96,-84,WEAK,,,21,,,,,,,,,system
+2026-01-06T10:17:14.659122,2026-01-06 10:17:14,2026-01-06T10:17:14.659122,bluetooth_le,unknown,,,,Unknown,,-67,,MEDIUM,,,1,,,,,,,,,system
+2026-01-06T10:17:31.949480,2026-01-06 10:17:31,2026-01-06T10:17:31.949480,wifi,probe_request_unknown,Mobile-WLAN,,90:09:df:56:b7:01,Intel Corporate,,-83,-85,WEAK,6,6,2,,,,,,,,,system
+2026-01-06T10:17:34.666073,2026-01-06 10:17:34,2026-01-06T10:17:34.666073,wifi,probe_request_unknown,,,ee:12:0c:cd:7d:90,Unknown Manufacturer,,-86,-85,WEAK,9,9,2,,,,,,,,,system
+2026-01-06T10:17:34.989650,2026-01-06 10:17:34,2026-01-06T10:17:34.989650,wifi,probe_request_unknown,,,fe:f5:6f:85:b1:d9,Unknown Manufacturer,,-86,,WEAK,9,,1,,,,,,,,,system
+2026-01-06T10:17:35.762619,2026-01-06 10:17:35,2026-01-06T10:17:35.762619,wifi,probe_request_unknown,MA-WLAN,,a2:4d:ae:f2:84:41,Unknown Manufacturer,,-92,-95,WEAK,12,8,3,,,,,,,,,system
+2026-01-06T10:17:40.514966,2026-01-06 10:17:40,2026-01-06T10:17:40.514966,bluetooth_le,unknown,,,fa:51:60:01:eb:c9,Unknown Manufacturer,,-86,-86,WEAK,,,4,,,,,,,,,system
+2026-01-06T10:17:43.119728,2026-01-06 10:17:43,2026-01-06T10:17:43.119728,wifi,probe_request_unknown,,,e4:60:17:0e:ac:95,Intel Corporate,,-73,-67,WEAK,11,9,3,,,,,,,,,system
+2026-01-06T10:17:46.500318,2026-01-06 10:17:46,2026-01-06T10:17:46.500318,wifi,probe_request_unknown,,,76:cf:5b:e7:e0:31,Unknown Manufacturer,,-95,,WEAK,3,,1,,,,,,,,,system
+2026-01-06T10:17:51.817785,2026-01-06 10:17:51,2026-01-06T10:17:51.817785,bluetooth_le,unknown,,,,Unknown,,,,,,,1,,,,,,,,,system
+2026-01-06T10:18:06.608274,2026-01-06 10:18:06,2026-01-06T10:18:06.608274,wifi,probe_request_unknown,MA-WLAN,,a,Unknown Manufacturer,,-91,,WEAK,11,,1,,,,,,,,,system
+2026-01-06T10:18:14.545133,2026-01-06 10:18:14,2026-01-06T10:18:14.545133,wifi,beacon_unknown,ZKB Gast-WLAN,,c88:c7:c3:2a:61,Unknown Manufacturer,,-93,,WEAK,11,,1,,,,,,,,,system
+2026-01-06T10:18:17.727628,2026-01-06 10:18:17,2026-01-06T10:18:17.727628,wifi,beacon_unknown,Tech-WLAN,,,Unknown,,-75,,WE7:c3:37:03,,,1,,,,,,,,,system
+2026-01-06T10:18:22.521065,2026-01-06 10:18:22,2026-01-06T10:18:22.521065,bluetooth_le,unknown,,,64:0c:2f:b9:a0:89,Unknown Manufacturer,,-95,-93,WEAK,,,17,,,,,,,,,system
+2026-01-06T10:18:35.124349,2026-01-06 10:18:35,2026-01-06T10:18:35.124349,bluetooth_le,unknown,,,f9:4c:56:25:68:f2,Unknown Manufacturer,,-87,-87,WEAK,,,15,,,,,,,,,system
+2026-01-06T10:18:47.295359,2026-01-06 10:18:47,2026-01-06T10:18:47.295359,bluetooth_le,unknown,,,70:26:fc:27:c9:a5,Unknown Manufacturer,,-94,-90,WEAK,,,2,,,,,,,,,system
+2026-01-06T10:19:11.202060,2026-01-06 10:19:11,2026-01-06T10:19:11.202060,bluetooth_le,unknown,,,c2:29:a6:51:30:60,Unknown Manufacturer,,-94,-93,WEAK,,,4,,,,,,,,,system
+2026-01-06T10:19:18.575920,2026-01-06 10:19:18,2026-01-06T10:19:18.575920,wifi,probe_request_unknown,,,06:96:ef:38:e1:b6,Unknown Manufacturer,,-92,,WEAK,11,,1,,,,,,,,,system
+2026-01-06T10:19:25.607052,2026-01-06 10:19:25,2026-01-06T10:19:25.607052,wifi,probe_request_unknown,,,ae:01:30:43:73:c2,Unknown Manufacturer,,-87,-87,WEAK,10,10,2,,,,,,,,,system
+2026-01-06T10:19:25.932015,2026-01-06 10:19:25,2026-01-06T10:19:25.932015,wifi,probe_request_unknown,,,7e:5e:ce:f7:f8:38,Unknown Manufacturer,,-89,,WEAK,11,,1,,,,,,,,,system
+2026-01-06T10:19:29.612853,2026-01-06 10:19:29,2026-01-06T10:19:29.612853,bluetooth_le,unknown,,,d6:8f:21:e7:ce:8f,Unknown Manufacturer,,-91,-92,WEAK,,,2,,,,,,,,,system
+2026-01-06T10:19:36.306156,2026-01-06 10:19:36,2026-01-06T10:19:36.306156,bluetooth_le,unknown,,,7c:fe:df:23:1a:aa,Unknown Manufacturer,,-96,-95,WEAK,,,2,,,,,,,,,system
+2026-01-06T10:19:48.642483,2026-01-06 10:19:48,2026-01-06T10:19:48.642483,wifi,probe_request_unknown,,,82:62:d1:61:00:3a,Unknown Manufacturer,,-92,-91,WEAK,8,8,2,,,,,,,,,system
+2026-01-06T10:19:51.777341,2026-01-06 10:19:51,2026-01-06T10:19:51.777341,wifi,probe_request_unknown,Mobile-WLAN,,c8:6e:08:a1:9d:39,Intel Corporate,,-88,,WEAK,1,,1,,,,,,,,,system
+2026-01-06T10:20:08.628858,2026-01-06 10:20:08,2026-01-06T10:20:08.628858,wifi,beacon_unknown,Tech-WLAN,,,Unknown,,-75,,WEAK,,,1,,,,,,,,,system
+2026-01-06T10:20:30.516119,2026-01-06 10:20:30,2026-01-06T10:20:30.516119,bluetooth_le,unknown,,,28:de:65:1b:41:fe,Hewlett Packard Enterprise,,-92,-92,WEAK,,,2,,,,,,,,,system
+2026-01-06T10:20:31.759662,2026-01-06 10:20:31,2026-01-06T10:20:31.759662,wifi,beacon_unknown,Tech-WLAN,,,Unknown,,-74,,,,,1,,,,,,,,,system
+2026-01-06T10:20:48.195039,2026-01-06 10:20:48,2026-01-06T10:20:48.195039,wifi,probe_request_unknown,Mobile-WLAN,,ec:4c:8c:e8:a0:85,Intel Corporate,,-86,-88,WEAK,1,4,2,,,,,,,,,system
+2026-01-06T10:20:55.331707,2026-01-06 10:20:55,2026-01-06T10:20:55.331707,bluetooth_le,unknown,,,fe:55:56:cf:ed:e0,Unknown Manufacturer,,-93,-90,WEAK,,,3,,,,,,,,,system
+2026-01-06T10:21:01.427126,2026-01-06 10:21:01,2026-01-06T10:21:01.427126,wifi,probe_request_unknown,,,5a:3d:68:04:a2:c5,Unknown Manufacturer,,-92,-92,WEAK,11,11,2,,,,,,,,,system
+2026-01-06T10:21:03.483868,2026-01-06 10:21:03,2026-01-06T10:21:03.483868,wifi,probe_request_unknown,,,aa:4b:b3:df:f0:25,Unknown Manufacturer,,-72,-74,WEAK,1,1,2,,,,,,,,,system
+2026-01-06T10:21:03.819914,2026-01-06 10:21:03,2026-01-06T10:21:03.819914,wifi,probe_request_unknown,,,86:ee:17:0b:ed:de,Unknown Manufacturer,,-91,,WEAK,1,,1,,,,,,,,,system
+2026-01-06T10:21:35.169893,2026-01-06 10:21:35,2026-01-06T10:21:35.169893,wifi,beacon_unknown,Tech-WLAN,,,Unknown,,-74,,WEAK,,,1,,,,,,,,,system
+2026-01-06T10:21:42.660174,2026-01-06 10:21:42,2026-01-06T10:21:42.660174,wifi,beacon_unknown,ZKB Gast-WLAN,,,Unknown,,-73,,,,,1,,,,,,,,,system
+2026-01-06T10:21:44.196948,2026-01-06 10:21:44,2026-01-06T10:21:44.196948,bluetooth_le,unknown,,,7c:07:35:1f:a8:28,Unknown Manufacturer,,-95,,WEAK,,,1,,,,,,,,,system
+2026-01-06T10:21:57.612547,2026-01-06 10:21:57,2026-01-06T10:21:57.612547,wifi,probe_request_unknown,,,f2:80:2e:74:ac:f6,Unknown Manufacturer,,-88,,WEAK,12,,1,,,,,,,,,system
+2026-01-06T10:21:58.589331,2026-01-06 10:21:58,2026-01-06T10:21:58.589331,wifi,beacon_unknown,ZKB Gast-WLAN,,cc:88:c7:c3:37:017,Hewlett Packard Enterprise,,-73,,WEAK,1,,1,,,,,,,,,system
+2026-01-06T10:22:30.184286,2026-01-06 10:22:30,2026-01-06T10:22:30.184286,wifi,beacon_unknown,ZKB Gast-WLAN,,cc3:37:01,Unknown Manufacturer,,-76,,WEAK,1,,1,,,,,,,,,system
+2026-01-06T10:22:30.723200,2026-01-06 10:22:30,2026-01-06T10:22:30.723200,wifi,beacon_unknown,Tech-WLAN,,,Unknown,,-76,,,,,1,,,,,,,,,system
+2026-01-06T10:22:35.595524,2026-01-06 10:22:35,2026-01-06T10:22:35.595524,wifi,probe_request_unknown,,,46:d7:03:32:f2:36,Unknown Manufacturer,,-92,-95,WEAK,10,1,2,,,,,,,,,system
+2026-01-06T10:22:55.409803,2026-01-06 10:22:55,2026-01-06T10:22:55.409803,wifi,probe_request_unknown,,,90:09:df:54:70:86,Intel Corporate,,-94,,WEAK,4,,1,,,,,,,,,system
