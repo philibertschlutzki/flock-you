@@ -58,7 +58,16 @@ jobs:
       - name: Check for changes
         id: check_changes
         run: |
-          git --no-pager diff --exit-code include/known_blacklist_generated.h src/known_blacklist_generated.cpp || echo "changes_detected=true" >> $GITHUB_OUTPUT
+          # Check if files exist and have changes
+          if [ ! -f include/known_blacklist_generated.h ] || [ ! -f src/known_blacklist_generated.cpp ]; then
+            echo "Generated files are new, changes detected"
+            echo "changes_detected=true" >> $GITHUB_OUTPUT
+          elif ! git --no-pager diff --exit-code include/known_blacklist_generated.h src/known_blacklist_generated.cpp; then
+            echo "Changes detected in generated files"
+            echo "changes_detected=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes detected in generated files"
+          fi
       
       - name: Commit and push changes
         if: steps.check_changes.outputs.changes_detected == 'true'
